@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TonConnect Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>
+  eruda.init();
+</script>
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+<style>
+  body {
+    background: #0b0c10;
+    color: #f5f6f8;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding-top: 80px;
+  }
+  button {
+    background: #7c5cfc;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  #status {
+    color: #9ba0ae;
+    font-size: 14px;
+    max-width: 320px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h2>Vaultic TonConnect Demo</h2>
+<div id="ton-connect-button"></div>
+<button id="send-tx" style="display:none">Send test transaction</button>
+<p id="status">Not connected</p>
+
+<script>
+  const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+    manifestUrl: "https://gram-wallet.vercel.app/api/tonconnect.json",
+    buttonRootId: "ton-connect-button",
+    walletsListConfiguration: {
+      includeWallets: [
+        {
+          appName: "vaultic-wallet",
+          name: "Vaultic",
+          imageUrl: "https://gram-wallet.vercel.app/icon.svg",
+          aboutUrl: "https://gram-wallet.vercel.app",
+          universalLink: "https://gram-wallet.vercel.app/connect",
+          bridgeUrl: "https://bridge.tonapi.io/bridge",
+          platforms: ["chrome", "android", "ios", "macos", "windows", "linux"]
+        }
+      ]
+    }
+  })
+
+  const statusEl = document.getElementById("status")
+  const sendBtn = document.getElementById("send-tx")
+
+  tonConnectUI.onStatusChange((wallet) => {
+    if (wallet) {
+      statusEl.textContent = "Connected: " + wallet.account.address
+      sendBtn.style.display = "inline-block"
+    } else {
+      statusEl.textContent = "Not connected"
+      sendBtn.style.display = "none"
+    }
+  })
+
+  sendBtn.addEventListener("click", async () => {
+    try {
+      const result = await tonConnectUI.sendTransaction({
+        validUntil: Math.floor(Date.now() / 1000) + 300,
+        messages: [
+          {
+            address: "UQBxktI5AXqKPEV3jLBW5LSmFoRNqGbsuiO6e1Tq8A1EB-K4",
+            amount: "1000000"
+          }
+        ]
+      })
+      statusEl.textContent = "Sent: " + JSON.stringify(result)
+    } catch (err) {
+      statusEl.textContent = "Error: " + err.message
+    }
+  })
+</script>
+
+</body>
+</html>
