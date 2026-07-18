@@ -39,20 +39,20 @@
 </head>
 <body>
 
-<h2>Vaultic TonConnect Demo</h2>
+<h2>TonConnect Demo</h2>
 <div id="ton-connect-button"></div>
 <button id="send-tx" style="display:none">Send test transaction</button>
 <p id="status">Not connected</p>
 
 <script>
   const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-    manifestUrl: "https://gram-wallet.vercel.app/api/tonconnect.json",
+    manifestUrl: "https://raw.githubusercontent.com/CoreEase/assets/refs/heads/main/assets/tonconnect-manifest.json",
     buttonRootId: "ton-connect-button",
     walletsListConfiguration: {
       includeWallets: [
         {
-          appName: "vaultic-wallet",
-          name: "Vaultic",
+          appName: "tonease",
+          name: "TonEase",
           imageUrl: "https://gram-wallet.vercel.app/icon.svg",
           aboutUrl: "https://gram-wallet.vercel.app",
           universalLink: "https://gram-wallet.vercel.app/connect",
