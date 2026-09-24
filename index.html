@@ -1,93 +1,897 @@
 <!doctype html>
 <html lang="en" dir="ltr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TON Connect Toolkit</title>
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script>
-  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-  <style>
-    :root{--bg:#0b0d12;--panel:#151923;--line:#293142;--text:#f4f6fb;--muted:#9ba5b6;--accent:#7657ff;--ok:#35ce91;--bad:#ff6262;--warn:#f1c75b;--mono:ui-monospace,SFMono-Regular,Consolas,monospace}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:24px 14px 80px;max-width:900px;margin-inline:auto}
-    h1{font-size:24px;margin:0 0 5px}.lead{color:var(--muted);margin:0 0 18px;font-size:14px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}.card h2{font-size:15px;margin:0 0 13px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media(max-width:650px){.grid{grid-template-columns:1fr}.top{display:block}#ton-connect-button{margin-top:14px}}
-    label{display:block;color:var(--muted);font-size:12px;margin:9px 0 4px}input,textarea,select{width:100%;background:#0e1118;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px;font:inherit;font-size:13px}textarea{min-height:90px;resize:vertical;font-family:var(--mono);direction:ltr;text-align:left}.row{display:flex;gap:8px;align-items:end}.row>*{flex:1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}button{border:0;border-radius:9px;padding:10px 14px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}button.secondary{background:transparent;border:1px solid var(--line);font-weight:500}button.danger{background:#632b39}button:disabled{opacity:.45;cursor:not-allowed}.hint{font-size:12px;color:var(--muted);line-height:1.6}.warning{border-right:3px solid var(--warn);padding:8px 10px;color:#f8df98;background:#2a2413;border-radius:6px;font-size:12px;line-height:1.6}.status{font-size:13px;line-height:1.8}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--bad);margin-left:6px}.dot.on{background:var(--ok)}.mono{font-family:var(--mono);direction:ltr;text-align:left;word-break:break-all}.hidden{display:none}#log{background:#0e1118;border:1px solid var(--line);border-radius:9px;padding:10px;max-height:300px;overflow:auto;font:11px/1.55 var(--mono);direction:ltr;text-align:left}.entry{border-bottom:1px solid var(--line);padding:7px 0;white-space:pre-wrap;word-break:break-word}.entry:last-child{border:0}.ok{color:var(--ok)}.bad{color:var(--bad)}.muted{color:var(--muted)}.badge{font-size:11px;color:#c7bcff;background:#32266b;border-radius:999px;padding:3px 8px;margin-right:6px}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>TON Connect Toolkit</title>
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+<style>
+  :root{
+    --bg:#0b0d12;--panel:#151923;--panel-2:#0e1118;--line:#293142;
+    --text:#f4f6fb;--muted:#9ba5b6;--accent:#7657ff;--accent-hover:#8a70ff;
+    --ok:#35ce91;--bad:#ff6262;--warn:#f1c75b;
+    --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+    --radius:14px;--radius-sm:8px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    padding:24px 14px 90px;max-width:960px;margin-inline:auto;
+    line-height:1.5;font-size:14px;
+  }
+  header.top{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    gap:16px;margin-bottom:22px;
+  }
+  header.top h1{font-size:24px;margin:0 0 6px;font-weight:800;letter-spacing:-0.4px}
+  header.top p{margin:0;color:var(--muted);font-size:13.5px;max-width:560px}
+
+  .card{
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:var(--radius);padding:18px;margin:14px 0;
+  }
+  .card h2{
+    font-size:14px;margin:0 0 4px;font-weight:700;
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  }
+  .card h2 + .hint{margin-top:6px}
+  .card p{margin:0 0 12px}
+  .hint{font-size:12.5px;color:var(--muted);line-height:1.6;margin:0}
+  .warning{
+    border-inline-start:3px solid var(--warn);
+    padding:10px 12px;color:#f8df98;background:#2a2413;
+    border-radius:var(--radius-sm);font-size:12.5px;line-height:1.6;
+    margin:12px 0 0;
+  }
+  .badge{
+    font-size:11px;color:#c7bcff;background:#32266b;border-radius:999px;
+    padding:3px 9px;font-weight:600;letter-spacing:0.2px;
+  }
+  .badge.testnet{background:#2b3d2e;color:#8fd99f}
+
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  @media(max-width:700px){
+    .grid,.grid-3,.grid-4{grid-template-columns:1fr}
+    header.top{display:block}
+    #ton-connect-button{margin-top:14px}
+  }
+
+  label{
+    display:block;color:var(--muted);font-size:11.5px;font-weight:600;
+    margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.4px;
+  }
+  label:first-child{margin-top:0}
+
+  input,textarea,select{
+    width:100%;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:var(--radius-sm);color:var(--text);padding:10px 12px;
+    font:inherit;font-size:13.5px;outline:none;
+    transition:border-color 120ms ease, box-shadow 120ms ease;
+  }
+  input:focus,textarea:focus,select:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(118,87,255,0.15);
+  }
+  textarea{
+    min-height:96px;resize:vertical;
+    font-family:var(--mono);font-size:12.5px;line-height:1.55;
+  }
+  input::placeholder,textarea::placeholder{color:#5c6675}
+  select{cursor:pointer}
+  select option{background:var(--panel-2)}
+
+  .row{display:flex;gap:10px;align-items:end}
+  .row > *{flex:1}
+
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+  button{
+    border:0;border-radius:10px;padding:10px 16px;background:var(--accent);
+    color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;
+    font-family:inherit;transition:background-color 120ms ease, transform 80ms ease;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  button:hover:not(:disabled){background:var(--accent-hover)}
+  button:active:not(:disabled){transform:scale(0.98)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.secondary{
+    background:transparent;border:1px solid var(--line);color:var(--text);
+  }
+  button.secondary:hover:not(:disabled){background:var(--panel-2);border-color:#3a4659}
+  button.danger{background:#632b39}
+  button.danger:hover:not(:disabled){background:#7a3346}
+
+  .status{
+    display:flex;align-items:center;gap:10px;
+    font-size:13.5px;margin-bottom:12px;
+  }
+  .dot{
+    display:inline-block;width:9px;height:9px;border-radius:50%;
+    background:var(--bad);box-shadow:0 0 0 4px rgba(255,98,98,0.15);
+    transition:background-color 200ms ease, box-shadow 200ms ease;
+    flex-shrink:0;
+  }
+  .dot.on{
+    background:var(--ok);
+    box-shadow:0 0 0 4px rgba(53,206,145,0.15);
+  }
+
+  #wallet-details{margin-top:10px}
+  #wallet-details div{
+    font-size:12.5px;color:var(--muted);
+    padding:5px 0;border-bottom:1px solid var(--line);
+    display:flex;gap:8px;flex-wrap:wrap;
+  }
+  #wallet-details div:last-child{border-bottom:0}
+  #wallet-details div strong{
+    color:var(--text);font-weight:600;flex-shrink:0;
+  }
+  #wallet-details .mono{color:#c7bcff}
+
+  .mono{
+    font-family:var(--mono);font-size:12.5px;
+    word-break:break-all;text-align:left;direction:ltr;
+  }
+  .hidden{display:none !important}
+
+  #log{
+    background:var(--panel-2);border:1px solid var(--line);
+    border-radius:var(--radius-sm);padding:0 12px;
+    max-height:340px;overflow-y:auto;
+    font-family:var(--mono);font-size:11.5px;line-height:1.6;
+    direction:ltr;text-align:left;
+  }
+  #log:empty::before{
+    content:"No events yet. Events will appear here as you interact.";
+    color:var(--muted);display:block;padding:14px 0;font-style:italic;
+  }
+  .entry{
+    border-bottom:1px solid var(--line);
+    padding:10px 0;white-space:pre-wrap;word-break:break-word;
+  }
+  .entry:last-child{border-bottom:0}
+  .entry-time{color:#5c6675;margin-bottom:4px}
+  .entry-tag{color:#c7bcff;font-weight:600}
+  .ok{color:var(--ok)}
+  .bad{color:var(--bad)}
+  .muted{color:var(--muted)}
+  .warn{color:var(--warn)}
+</style>
 </head>
 <body>
-  <header class="top"><div><h1>TON Connect Toolkit</h1><p class="lead">TON Connect test bench for wallet connection, payments, Jettons, NFTs, signing, and batch transfers.</p></div><div id="ton-connect-button"></div></header>
 
-  <section class="card"><h2>Wallet</h2><div class="status"><span class="dot" id="dot"></span><span id="wallet-status">Not connected</span></div><div id="wallet-details" class="hint"></div><div class="actions"><button id="disconnect" class="secondary hidden">Disconnect wallet</button></div></section>
+<header class="top">
+  <div>
+    <h1>TON Connect Toolkit</h1>
+    <p>
+      Test bench for TON Connect — wallet connection, TON transfers, Jetton & NFT transfers,
+      batch messages, signData / signMessage flows, on mainnet or testnet.
+    </p>
+  </div>
+  <div id="ton-connect-button"></div>
+</header>
 
-  <section class="card"><h2>Send TON — Single message or batch transfer <span class="badge">raw messages</span></h2>
-    <p class="hint">This page uses the official <code>messages</code> request shape. Addresses are normalized to TEP-2 friendly form and TON amounts are converted to nanograms.</p>
-    <div class="grid"><div><label>Recipient address</label><input id="bulk-recipient" placeholder="EQ... or UQ..." /></div><div><label>Message count, up to 254 per batch</label><input id="bulk-count" type="number" min="1" max="254" value="254" /></div><div><label>Amount per message in TON</label><input id="bulk-amount" inputmode="decimal" placeholder="Example: 0.000001" /></div><div><label>Optional comment prefix</label><input id="bulk-comment" placeholder="payment" /></div></div>
-    <div class="actions"><button id="send-bulk">Build and review batch</button><button id="send-one" class="secondary">Send one message</button></div>
-    <p class="warning">254 is not a universal wallet limit. The app reads <code>SendTransaction.maxMessages</code> from the wallet and automatically splits the batch into multiple requests when needed. Each request requires a separate wallet approval.</p>
-  </section>
+<section class="card">
+  <h2>Network</h2>
+  <p class="hint">
+    Select the network this toolkit targets. Every request (sendTransaction, signData,
+    signMessage) will carry this network ID and the wallet will refuse a mismatch.
+  </p>
+  <div class="grid grid-3">
+    <div>
+      <label for="target-network">Target network</label>
+      <select id="target-network">
+        <option value="-239">Mainnet (-239)</option>
+        <option value="-3">Testnet (-3)</option>
+      </select>
+    </div>
+  </div>
+  <p class="warning" id="network-warning">
+    Testnet mode is active. Only use testnet assets on testnet. Mainnet transfers are irreversible.
+  </p>
+</section>
 
-  <section class="card"><h2>Send Jetton <span class="badge">TEP-74</span></h2><div class="grid"><div><label>Sender Jetton Wallet address</label><input id="jetton-wallet" placeholder="EQ..." /></div><div><label>Recipient address</label><input id="jetton-recipient" placeholder="EQ..." /></div><div><label>Jetton amount in decimal units</label><input id="jetton-amount" placeholder="10.5" /></div><div><label>Decimals</label><input id="jetton-decimals" type="number" value="9" min="0" max="30" /></div></div><label>Optional comment</label><input id="jetton-comment" placeholder="payment" /><div class="actions"><button id="send-jetton">Review Send Jetton</button></div><p class="hint">Raw transfer requires the sender Jetton Wallet address and a TEP-74 transfer body. Do not use a Jetton Master address in its place.</p></section>
+<section class="card">
+  <h2>Wallet connection</h2>
+  <div class="status">
+    <span class="dot" id="dot"></span>
+    <span id="wallet-status">Not connected</span>
+  </div>
+  <div id="wallet-details" class="hint"></div>
+  <div class="actions">
+    <button id="disconnect" class="secondary hidden">Disconnect wallet</button>
+  </div>
+</section>
 
-  <section class="card"><h2>Send NFT <span class="badge">TEP-62</span></h2><div class="grid"><div><label>NFT item address</label><input id="nft-item" placeholder="EQ..." /></div><div><label>New owner address</label><input id="nft-owner" placeholder="EQ..." /></div><div><label>Excess return address</label><input id="nft-response" placeholder="Leave blank to use your wallet" /></div><div><label>Forward amount in TON</label><input id="nft-forward" value="0.000000001" /></div></div><label>Optional comment</label><input id="nft-comment" placeholder="gift" /><div class="actions"><button id="send-nft">Review NFT transfer</button></div></section>
+<section class="card">
+  <h2>
+    Send TON
+    <span class="badge">raw messages</span>
+  </h2>
+  <p class="hint">
+    Uses the official <code>messages</code> request shape. Addresses are normalized to
+    TEP-2 friendly form and amounts converted to nanoTON.
+  </p>
 
-  <section class="card"><h2>Signing</h2><div class="grid"><div><label>signData type</label><select id="sign-type"><option value="text">text</option><option value="binary">binary / base64</option><option value="cell">cell / TL-B + base64 BoC</option></select></div><div id="schema-wrap" class="hidden"><label>TL-B schema</label><input id="sign-schema" placeholder="msg#_ text:string = Msg;" /></div></div><label>Payload</label><textarea id="sign-payload" placeholder="hello TON"></textarea><div class="actions"><button id="sign-data">Sign Data</button><button id="sign-message" class="secondary">Sign Message (if supported by the wallet)</button></div></section>
+  <div class="grid">
+    <div>
+      <label for="bulk-recipient">Recipient address</label>
+      <input id="bulk-recipient" placeholder="EQ… or UQ…" autocomplete="off" spellcheck="false" />
+    </div>
+    <div>
+      <label for="bulk-amount">Amount per message (TON)</label>
+      <input id="bulk-amount" inputmode="decimal" placeholder="0.01" autocomplete="off" />
+    </div>
+    <div>
+      <label for="bulk-count">Message count (1–254)</label>
+      <input id="bulk-count" type="number" min="1" max="254" value="1" inputmode="numeric" />
+    </div>
+    <div>
+      <label for="bulk-comment">Optional comment</label>
+      <input id="bulk-comment" placeholder="payment" autocomplete="off" />
+    </div>
+  </div>
 
-  <section class="card"><h2>Event log</h2><div id="log"></div><div class="actions"><button id="clear-log" class="secondary">Clear event log</button></div></section>
+  <div class="actions">
+    <button id="send-one">Send single message</button>
+    <button id="send-bulk" class="secondary">Build batch (N messages)</button>
+  </div>
+
+  <p class="warning">
+    The app reads <code>SendTransaction.maxMessages</code> from the connected wallet and
+    automatically splits the batch into multiple requests. Each request requires a separate
+    wallet approval. 254 is a protocol ceiling, not a universal wallet limit.
+  </p>
+</section>
+
+<section class="card">
+  <h2>
+    Send Jetton
+    <span class="badge">TEP-74</span>
+  </h2>
+  <p class="hint">
+    Requires the <strong>sender Jetton Wallet</strong> address (not the Jetton Master).
+    The transfer body is built per TEP-74 with <code>forward_ton_amount</code> = 1 nanoTON.
+  </p>
+
+  <div class="grid">
+    <div>
+      <label for="jetton-wallet">Sender Jetton Wallet</label>
+      <input id="jetton-wallet" placeholder="EQ…" autocomplete="off" spellcheck="false" />
+    </div>
+    <div>
+      <label for="jetton-recipient">Recipient address</label>
+      <input id="jetton-recipient" placeholder="EQ…" autocomplete="off" spellcheck="false" />
+    </div>
+    <div>
+      <label for="jetton-amount">Amount (decimal units)</label>
+      <input id="jetton-amount" placeholder="10.5" inputmode="decimal" autocomplete="off" />
+    </div>
+    <div>
+      <label for="jetton-decimals">Decimals</label>
+      <input id="jetton-decimals" type="number" value="9" min="0" max="30" inputmode="numeric" />
+    </div>
+  </div>
+
+  <label for="jetton-comment">Optional comment</label>
+  <input id="jetton-comment" placeholder="payment" autocomplete="off" />
+
+  <div class="actions">
+    <button id="send-jetton">Review &amp; send Jetton</button>
+  </div>
+</section>
+
+<section class="card">
+  <h2>
+    Send NFT
+    <span class="badge">TEP-62</span>
+  </h2>
+  <p class="hint">
+    Builds a TEP-62 ownership-assignment body. Attached TON is used for forward fees
+    and the response destination.
+  </p>
+
+  <div class="grid">
+    <div>
+      <label for="nft-item">NFT item address</label>
+      <input id="nft-item" placeholder="EQ…" autocomplete="off" spellcheck="false" />
+    </div>
+    <div>
+      <label for="nft-owner">New owner address</label>
+      <input id="nft-owner" placeholder="EQ…" autocomplete="off" spellcheck="false" />
+    </div>
+    <div>
+      <label for="nft-response">Excess return address</label>
+      <input id="nft-response" placeholder="Leave blank to use your wallet" autocomplete="off" spellcheck="false" />
+    </div>
+    <div>
+      <label for="nft-forward">Forward amount (TON)</label>
+      <input id="nft-forward" value="0.000000001" inputmode="decimal" autocomplete="off" />
+    </div>
+  </div>
+
+  <label for="nft-comment">Optional comment</label>
+  <input id="nft-comment" placeholder="gift" autocomplete="off" />
+
+  <div class="actions">
+    <button id="send-nft">Review &amp; transfer NFT</button>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Signing</h2>
+
+  <div class="grid grid-3">
+    <div>
+      <label for="sign-type">signData type</label>
+      <select id="sign-type">
+        <option value="text">text</option>
+        <option value="binary">binary / base64</option>
+        <option value="cell">cell / TL-B + base64 BoC</option>
+      </select>
+    </div>
+    <div>
+      <label for="sign-from">from (optional)</label>
+      <input id="sign-from" placeholder="Defaults to connected wallet" autocomplete="off" spellcheck="false" />
+    </div>
+    <div>
+      <label for="sign-network">signData network</label>
+      <select id="sign-network">
+        <option value="">Use target network</option>
+        <option value="-239">Mainnet (-239)</option>
+        <option value="-3">Testnet (-3)</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="schema-wrap" class="hidden">
+    <label for="sign-schema">TL-B schema</label>
+    <input id="sign-schema" placeholder="msg#_ text:string = Msg;" autocomplete="off" />
+  </div>
+
+  <label for="sign-payload">Payload</label>
+  <textarea id="sign-payload" placeholder="hello TON" spellcheck="false"></textarea>
+
+  <div class="actions">
+    <button id="sign-data">Sign Data</button>
+    <button id="sign-message" class="secondary">Sign Message</button>
+  </div>
+
+  <p class="warning">
+    <strong>signMessage</strong> is not part of the base TON Connect protocol and is only
+    supported by a few wallets. The button will fail gracefully if your wallet doesn't
+    declare the corresponding feature.
+  </p>
+</section>
+
+<section class="card">
+  <h2>Event log</h2>
+  <div id="log"></div>
+  <div class="actions">
+    <button id="clear-log" class="secondary">Clear log</button>
+  </div>
+</section>
 
 <script type="module">
 import { Address, beginCell, toNano } from "https://esm.sh/@ton/core@0.60.0";
 
-const MAINNET = "-239";
+const MAINNET_CHAIN = "-239";
+const TESTNET_CHAIN = "-3";
 const MAX_REQUEST_MESSAGES = 254;
-const MANIFEST_URL = "https://raw.githubusercontent.com/CoreEase/assets/refs/heads/main/assets/tonconnect-manifest.json";
+const MANIFEST_URL =
+  "https://raw.githubusercontent.com/CoreEase/assets/refs/heads/main/assets/tonconnect-manifest.json";
+
 const ui = new TON_CONNECT_UI.TonConnectUI({
   manifestUrl: MANIFEST_URL,
   buttonRootId: "ton-connect-button",
   walletsListConfiguration: {
-    includeWallets: [{
-      appName: "tonease",
-      name: "TonEase",
-      imageUrl: "https://raw.githubusercontent.com/CoreEase/assets/refs/heads/main/assets/logo.webp",
-      aboutUrl: "https://gram-wallet.vercel.app",
-      universalLink: "https://t.me/TonEaseBot?attach=wallet",
-      bridgeUrl: "https://connect.ton.org/bridge",
-      platforms: ["chrome", "android", "ios", "macos", "windows", "linux"]
-    }]
-  }
+    includeWallets: [
+      {
+        appName: "tonease",
+        name: "TonEase",
+        imageUrl:
+          "https://raw.githubusercontent.com/CoreEase/assets/refs/heads/main/assets/logo.webp",
+        aboutUrl: "https://gram-wallet.vercel.app",
+        universalLink: "https://t.me/TonEaseBot?attach=wallet",
+        bridgeUrl: "https://connect.ton.org/bridge",
+        platforms: ["chrome", "android", "ios", "macos", "windows", "linux"],
+      },
+    ],
+  },
 });
+
 const $ = (id) => document.getElementById(id);
 const logEl = $("log");
-function log(tag, value, kind="") { const e=document.createElement("div"); e.className=`entry ${kind}`; e.textContent=`[${new Date().toLocaleTimeString()}] ${tag}\n${typeof value === "string" ? value : JSON.stringify(value,null,2)}`; logEl.prepend(e); }
-function requireWallet(){ if(!ui.account?.address) throw new Error("Connect a wallet first."); return ui.account; }
-function friendly(value, label="Address") { try { return Address.parse(value.trim()).toString({urlSafe:true,bounceable:true}); } catch { throw new Error(`${label} is invalid. Use a complete friendly address, usually starting with EQ or UQ.`); } }
-function decimalToUnits(value, decimals){ const s=String(value).trim(); if(!/^\d+(\.\d+)?$/.test(s)) throw new Error("Amount must be a positive number."); const [a,b=""] = s.split("."); if(b.length>decimals) throw new Error(`Amount has more decimal places than ${decimals}.`); return BigInt(a + b.padEnd(decimals,"0")); }
-function commentCell(text){ return text ? beginCell().storeUint(0,32).storeStringTail(text).endCell() : null; }
-function payloadBoc(cell){ return cell ? cell.toBoc().toString("base64") : undefined; }
-function validUntil(){ return Math.floor(Date.now()/1000)+300; }
-function walletMaxMessages(){ const features=ui.wallet?.device?.features || []; const f=features.find(x=>typeof x === "object" && (x.name === "SendTransaction" || x.name === "SendTransaction")); const n=Number(f?.maxMessages); return Number.isInteger(n)&&n>0 ? Math.min(n,MAX_REQUEST_MESSAGES) : 1; }
-function featureNames(){ return (ui.wallet?.device?.features||[]).map(x=>typeof x === "string"?x:x.name).join(", ")||"-"; }
-function chunk(arr,size){ const out=[]; for(let i=0;i<arr.length;i+=size) out.push(arr.slice(i,i+size)); return out; }
-function askToSend(summary){ return window.confirm(`${summary}\n\nThe wallet will open for signing. This action may be irreversible. Continue?`); }
 
-function makeTonMessage(address, amount, comment="") { return { address:friendly(address,"Recipient address"), amount:toNano(String(amount)).toString(), ...(comment ? {payload:payloadBoc(commentCell(comment))} : {}) }; }
-function collectBulk(){ const recipient=friendly($("bulk-recipient").value,"Recipient address"); const count=Number($("bulk-count").value); const amount=$("bulk-amount").value.trim(); const prefix=$("bulk-comment").value.trim(); if(!Number.isInteger(count)||count<1||count>MAX_REQUEST_MESSAGES) throw new Error(`Message count must be between 1 and${MAX_REQUEST_MESSAGES}.`); if(!amount) throw new Error("Enter an amount per message."); toNano(amount); return Array.from({length:count},(_,i)=>makeTonMessage(recipient,amount,prefix ? `${prefix} #${i+1}/${count}` : "")); }
-async function sendBatched(messages, label="TON") { requireWallet(); const size=walletMaxMessages(); const batches=chunk(messages,size); const total=messages.reduce((x,m)=>x+BigInt(m.amount),0n); if(!askToSend(`${label}: ${messages.length} message in ${batches.length} request\nTotal TON amount: ${(Number(total)/1e9).toFixed(9)}\nWallet limit per request: ${size}`)) { log("cancelled","No request was sent."); return; } const results=[]; for(let i=0;i<batches.length;i++){ const tx={validUntil:validUntil(),network:MAINNET,messages:batches[i]}; log(`request ${i+1}/${batches.length}`,tx); const result=await ui.sendTransaction(tx); results.push(result); log(`success ${i+1}/${batches.length}`,result,"ok"); } return results; }
+function log(tag, value, kind = "") {
+  const wrap = document.createElement("div");
+  wrap.className = `entry ${kind}`;
 
-$("send-bulk").onclick=async()=>{try{const msgs=collectBulk(); log("bulk-preview",{count:msgs.length,recipient:msgs[0].address,amountEach:msgs[0].amount}); await sendBatched(msgs,"TON batch");}catch(e){log("bulk-error",e.message,"bad");}};
-$("send-one").onclick=async()=>{try{const msgs=collectBulk().slice(0,1); await sendBatched(msgs,"TON message");}catch(e){log("one-error",e.message,"bad");}};
+  const time = document.createElement("div");
+  time.className = "entry-time";
+  time.textContent = `[${new Date().toLocaleTimeString()}]`;
 
-$("send-jetton").onclick=async()=>{try{const account=requireWallet(); const jw=friendly($("jetton-wallet").value,"sender Jetton Wallet"); const recipient=friendly($("jetton-recipient").value,"Recipient address"); const response=friendly(account.address,"response address"); const decimals=Number($("jetton-decimals").value); if(!Number.isInteger(decimals)||decimals<0||decimals>30) throw new Error("Decimals are invalid."); const jettonAmount=decimalToUnits($("jetton-amount").value,decimals); const forward=1n; const body=beginCell().storeUint(0x0f8a7ea5,32).storeUint(BigInt(Date.now()),64).storeCoins(jettonAmount).storeAddress(Address.parse(recipient)).storeAddress(Address.parse(response)).storeBit(0).storeCoins(forward).storeBit(0).endCell(); const msg={address:jw,amount:toNano("0.05").toString(),payload:body.toBoc().toString("base64")}; const tx={validUntil:validUntil(),network:MAINNET,messages:[msg]}; log("jetton-preview",tx); if(!askToSend(`Send ${$("jetton-amount").value} Jetton to ${recipient}\nAttached TON amount: 0.05 TON`)) return; log("jetton-request",tx); log("jetton-success",await ui.sendTransaction(tx),"ok");}catch(e){log("jetton-error",e.message,"bad");}};
+  const head = document.createElement("div");
+  const tagSpan = document.createElement("span");
+  tagSpan.className = "entry-tag";
+  tagSpan.textContent = tag;
+  head.appendChild(tagSpan);
 
-$("send-nft").onclick=async()=>{try{const account=requireWallet(); const item=friendly($("nft-item").value,"NFT item"); const owner=friendly($("nft-owner").value,"New owner address"); const response=friendly($("nft-response").value.trim()||account.address,"response address"); const forward=toNano($("nft-forward").value||"0.000000001"); const c=commentCell($("nft-comment").value.trim()); const body=beginCell().storeUint(0x5fcc3d14,32).storeUint(BigInt(Date.now()),64).storeAddress(Address.parse(owner)).storeAddress(Address.parse(response)).storeBit(0).storeCoins(forward).storeBit(c?1:0); if(c) body.storeRef(c); const msg={address:item,amount:toNano("0.08").toString(),payload:body.endCell().toBoc().toString("base64")}; const tx={validUntil:validUntil(),network:MAINNET,messages:[msg]}; log("nft-preview",tx); if(!askToSend(`Transfer NFT to ${owner}\nAttached TON amount: 0.08 TON`)) return; log("nft-success",await ui.sendTransaction(tx),"ok");}catch(e){log("nft-error",e.message,"bad");}};
+  const body = document.createElement("div");
+  body.textContent =
+    typeof value === "string" ? value : JSON.stringify(value, null, 2);
 
-$("sign-type").onchange=()=>$("schema-wrap").classList.toggle("hidden",$("sign-type").value!=="cell");
-$("sign-data").onclick=async()=>{try{requireWallet();const type=$("sign-type").value,raw=$("sign-payload").value;const payload=type==="text"?{type:"text",text:raw}:type==="binary"?{type:"binary",bytes:raw.trim()}:{type:"cell",schema:$("sign-schema").value.trim(),cell:raw.trim()};if(!raw.trim())throw new Error("Enter a payload first.");log("signData-request",payload);const result=await ui.connector.signData(payload);log("signData-success",result,"ok");}catch(e){log("signData-error",e.message,"bad");}};
-$("sign-message").onclick=async()=>{try{requireWallet();const message=makeTonMessage($("bulk-recipient").value,$("bulk-amount").value||"0.000001",$("bulk-comment").value);const req={validUntil:validUntil(),network:MAINNET,messages:[message]};if(typeof ui.connector.signMessage!=="function")throw new Error("The wallet or its version does not support SignMessage.");log("signMessage-request",req);log("signMessage-success",await ui.connector.signMessage(req),"ok");}catch(e){log("signMessage-error",e.message,"bad");}};
+  wrap.appendChild(time);
+  wrap.appendChild(head);
+  wrap.appendChild(body);
+  logEl.prepend(wrap);
+}
 
-ui.onStatusChange(wallet=>{ if(wallet){$("dot").classList.add("on");$("wallet-status").textContent="Connected";$("disconnect").classList.remove("hidden");$("wallet-details").innerHTML=`<div>Address: <span class="mono">${wallet.account.address}</span></div><div>Network: <span class="mono">${wallet.account.chain}</span></div><div>Wallet: ${wallet.device.appName||"-"}</div><div>Features: ${featureNames()}</div><div>Detected limit: ${walletMaxMessages()} messages per request</div>`;log("connected",{address:wallet.account.address,chain:wallet.account.chain,maxMessages:walletMaxMessages()});}else{$("dot").classList.remove("on");$("wallet-status").textContent="Not connected";$("wallet-details").textContent="";$("disconnect").classList.add("hidden");}});
-$("disconnect").onclick=async()=>{try{await ui.disconnect();log("disconnected","Wallet disconnected.");}catch(e){log("disconnect-error",e.message,"bad");}};
-$("clear-log").onclick=()=>logEl.replaceChildren();
-log("ready","Loaded TON Connect test suite with the original manifest and TonEase wallet configuration.");
+function requireWallet() {
+  if (!ui.account?.address) throw new Error("Connect a wallet first.");
+  return ui.account;
+}
+
+function parseFriendly(value, label = "Address") {
+  const raw = (value ?? "").trim();
+  if (!raw) throw new Error(`${label} is required.`);
+  try {
+    return Address.parse(raw).toString({
+      urlSafe: true,
+      bounceable: true,
+    });
+  } catch {
+    throw new Error(
+      `${label} is invalid. Use a friendly address starting with EQ or UQ.`,
+    );
+  }
+}
+
+function decimalToUnits(value, decimals) {
+  const s = String(value).trim();
+  if (!/^\d+(\.\d+)?$/.test(s)) {
+    throw new Error("Amount must be a positive number.");
+  }
+  const [whole, fraction = ""] = s.split(".");
+  if (fraction.length > decimals) {
+    throw new Error(`Amount exceeds ${decimals} decimal places.`);
+  }
+  return BigInt(whole + fraction.padEnd(decimals, "0"));
+}
+
+function commentCell(text) {
+  const t = (text ?? "").trim();
+  if (!t) return null;
+  return beginCell().storeUint(0, 32).storeStringTail(t).endCell();
+}
+
+function payloadBoc(cell) {
+  return cell ? cell.toBoc().toString("base64") : undefined;
+}
+
+function validUntil() {
+  return Math.floor(Date.now() / 1000) + 300;
+}
+
+function currentNetwork() {
+  return $("target-network").value || MAINNET_CHAIN;
+}
+
+function isTestnetMode() {
+  return currentNetwork() === TESTNET_CHAIN;
+}
+
+function walletMaxMessages() {
+  const features = ui.wallet?.device?.features ?? [];
+  const st = features.find(
+    (f) => typeof f === "object" && f !== null && f.name === "SendTransaction",
+  );
+  const n = Number(st?.maxMessages);
+  return Number.isInteger(n) && n > 0 ? Math.min(n, MAX_REQUEST_MESSAGES) : 1;
+}
+
+function walletSupportsFeature(name) {
+  const features = ui.wallet?.device?.features ?? [];
+  return features.some((f) =>
+    typeof f === "string" ? f === name : f?.name === name,
+  );
+}
+
+function featureNames() {
+  const features = ui.wallet?.device?.features ?? [];
+  if (!features.length) return "—";
+  return features
+    .map((f) => (typeof f === "string" ? f : f?.name ?? "?"))
+    .filter(Boolean)
+    .join(", ");
+}
+
+function chunk(arr, size) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) {
+    out.push(arr.slice(i, i + size));
+  }
+  return out;
+}
+
+function askToSend(summary) {
+  return window.confirm(
+    `${summary}\n\nThe wallet will open for signing. This action may be irreversible. Continue?`,
+  );
+}
+
+function makeTonMessage(address, amountTon, comment = "") {
+  const cell = commentCell(comment);
+  return {
+    address: parseFriendly(address, "Recipient address"),
+    amount: toNano(String(amountTon)).toString(),
+    ...(cell ? { payload: payloadBoc(cell) } : {}),
+  };
+}
+
+function collectBulk() {
+  const recipient = parseFriendly(
+    $("bulk-recipient").value,
+    "Recipient address",
+  );
+  const count = Number($("bulk-count").value);
+  const amount = $("bulk-amount").value.trim();
+  const prefix = $("bulk-comment").value.trim();
+
+  if (!Number.isInteger(count) || count < 1 || count > MAX_REQUEST_MESSAGES) {
+    throw new Error(
+      `Message count must be an integer between 1 and ${MAX_REQUEST_MESSAGES}.`,
+    );
+  }
+  if (!amount) throw new Error("Enter an amount per message.");
+
+  toNano(amount);
+
+  return Array.from({ length: count }, (_, i) =>
+    makeTonMessage(
+      recipient,
+      amount,
+      prefix ? `${prefix} #${i + 1}/${count}` : "",
+    ),
+  );
+}
+
+async function sendBatched(messages, label = "TON") {
+  requireWallet();
+  const perRequest = walletMaxMessages();
+  const batches = chunk(messages, perRequest);
+  const network = currentNetwork();
+
+  const total = messages.reduce((sum, m) => sum + BigInt(m.amount), 0n);
+  const totalTon = (Number(total) / 1e9).toFixed(9);
+
+  const ok = askToSend(
+    `${label}\n` +
+      `Network: ${network === TESTNET_CHAIN ? "Testnet" : "Mainnet"}\n` +
+      `Messages: ${messages.length}\n` +
+      `Requests needed: ${batches.length}\n` +
+      `Total amount: ${totalTon} TON\n` +
+      `Wallet limit per request: ${perRequest}`,
+  );
+  if (!ok) {
+    log("cancelled", "User cancelled the request.");
+    return;
+  }
+
+  const results = [];
+  for (let i = 0; i < batches.length; i++) {
+    const tx = {
+      validUntil: validUntil(),
+      network,
+      messages: batches[i],
+    };
+
+    log(`request ${i + 1}/${batches.length}`, tx);
+    try {
+      const result = await ui.sendTransaction(tx);
+      results.push(result);
+      log(`success ${i + 1}/${batches.length}`, result, "ok");
+    } catch (e) {
+      log(`failed ${i + 1}/${batches.length}`, e.message ?? e, "bad");
+      throw e;
+    }
+  }
+  return results;
+}
+
+$("send-one").onclick = async () => {
+  try {
+    const msgs = collectBulk().slice(0, 1);
+    await sendBatched(msgs, "Single TON message");
+  } catch (e) {
+    log("send-one error", e.message ?? String(e), "bad");
+  }
+};
+
+$("send-bulk").onclick = async () => {
+  try {
+    const msgs = collectBulk();
+    log("bulk preview", {
+      count: msgs.length,
+      recipient: msgs[0].address,
+      amountEach: msgs[0].amount,
+      network: currentNetwork(),
+    });
+    await sendBatched(msgs, "TON batch");
+  } catch (e) {
+    log("send-bulk error", e.message ?? String(e), "bad");
+  }
+};
+
+$("send-jetton").onclick = async () => {
+  try {
+    const account = requireWallet();
+    const jettonWallet = parseFriendly(
+      $("jetton-wallet").value,
+      "Sender Jetton Wallet",
+    );
+    const recipient = parseFriendly(
+      $("jetton-recipient").value,
+      "Recipient address",
+    );
+    const response = parseFriendly(account.address, "Response address");
+
+    const decimals = Number($("jetton-decimals").value);
+    if (!Number.isInteger(decimals) || decimals < 0 || decimals > 30) {
+      throw new Error("Decimals must be an integer between 0 and 30.");
+    }
+
+    const jettonAmount = decimalToUnits($("jetton-amount").value, decimals);
+    const forwardTonNano = 1n;
+
+    const comment = commentCell($("jetton-comment").value);
+
+    const body = beginCell()
+      .storeUint(0x0f8a7ea5, 32)
+      .storeUint(BigInt(Date.now()), 64)
+      .storeCoins(jettonAmount)
+      .storeAddress(Address.parse(recipient))
+      .storeAddress(Address.parse(response))
+      .storeBit(0)
+      .storeCoins(forwardTonNano)
+      .storeBit(comment ? 1 : 0);
+    if (comment) body.storeRef(comment);
+
+    const tx = {
+      validUntil: validUntil(),
+      network: currentNetwork(),
+      messages: [
+        {
+          address: jettonWallet,
+          amount: toNano("0.05").toString(),
+          payload: body.endCell().toBoc().toString("base64"),
+        },
+      ],
+    };
+
+    log("jetton preview", tx);
+
+    const ok = askToSend(
+      `Send ${$("jetton-amount").value} Jetton\n` +
+        `Network: ${isTestnetMode() ? "Testnet" : "Mainnet"}\n` +
+        `To: ${recipient}\n` +
+        `Attached TON: 0.05 TON`,
+    );
+    if (!ok) return;
+
+    log("jetton success", await ui.sendTransaction(tx), "ok");
+  } catch (e) {
+    log("jetton error", e.message ?? String(e), "bad");
+  }
+};
+
+$("send-nft").onclick = async () => {
+  try {
+    const account = requireWallet();
+    const nftItem = parseFriendly($("nft-item").value, "NFT item");
+    const newOwner = parseFriendly($("nft-owner").value, "New owner");
+    const response = parseFriendly(
+      $("nft-response").value.trim() || account.address,
+      "Response address",
+    );
+
+    const forward = toNano($("nft-forward").value || "0.000000001");
+    const comment = commentCell($("nft-comment").value);
+
+    const body = beginCell()
+      .storeUint(0x5fcc3d14, 32)
+      .storeUint(BigInt(Date.now()), 64)
+      .storeAddress(Address.parse(newOwner))
+      .storeAddress(Address.parse(response))
+      .storeBit(0)
+      .storeCoins(forward)
+      .storeBit(comment ? 1 : 0);
+    if (comment) body.storeRef(comment);
+
+    const tx = {
+      validUntil: validUntil(),
+      network: currentNetwork(),
+      messages: [
+        {
+          address: nftItem,
+          amount: toNano("0.08").toString(),
+          payload: body.endCell().toBoc().toString("base64"),
+        },
+      ],
+    };
+
+    log("nft preview", tx);
+
+    const ok = askToSend(
+      `Transfer NFT\n` +
+        `Network: ${isTestnetMode() ? "Testnet" : "Mainnet"}\n` +
+        `To: ${newOwner}\n` +
+        `Attached TON: 0.08 TON`,
+    );
+    if (!ok) return;
+
+    log("nft success", await ui.sendTransaction(tx), "ok");
+  } catch (e) {
+    log("nft error", e.message ?? String(e), "bad");
+  }
+};
+
+$("sign-type").onchange = () => {
+  const isCell = $("sign-type").value === "cell";
+  $("schema-wrap").classList.toggle("hidden", !isCell);
+};
+
+$("sign-data").onclick = async () => {
+  try {
+    const account = requireWallet();
+    const type = $("sign-type").value;
+    const raw = $("sign-payload").value;
+
+    if (!raw.trim()) throw new Error("Enter a payload first.");
+
+    const fromValue = $("sign-from").value.trim();
+    const from = fromValue
+      ? parseFriendly(fromValue, "from address")
+      : account.address;
+
+    const networkOverride = $("sign-network").value;
+    const network = networkOverride || currentNetwork();
+
+    const basePayload = { from, network };
+
+    let payload;
+    if (type === "text") {
+      payload = { ...basePayload, type: "text", text: raw };
+    } else if (type === "binary") {
+      payload = { ...basePayload, type: "binary", bytes: raw.trim() };
+    } else {
+      const schema = $("sign-schema").value.trim();
+      if (!schema) throw new Error("TL-B schema is required for cell type.");
+      payload = { ...basePayload, type: "cell", schema, cell: raw.trim() };
+    }
+
+    log("signData request", payload);
+
+    if (typeof ui.connector?.signData !== "function") {
+      throw new Error("This TON Connect UI build doesn't expose signData.");
+    }
+
+    const result = await ui.connector.signData(payload);
+    log("signData success", result, "ok");
+  } catch (e) {
+    log("signData error", e.message ?? String(e), "bad");
+  }
+};
+
+$("sign-message").onclick = async () => {
+  try {
+    requireWallet();
+
+    if (!walletSupportsFeature("SignMessage")) {
+      throw new Error(
+        "The connected wallet does not declare the SignMessage feature.",
+      );
+    }
+
+    if (typeof ui.connector?.signMessage !== "function") {
+      throw new Error(
+        "This TON Connect UI build doesn't expose signMessage on the connector.",
+      );
+    }
+
+    const message = makeTonMessage(
+      $("bulk-recipient").value,
+      $("bulk-amount").value || "0.000001",
+      $("bulk-comment").value,
+    );
+
+    const req = {
+      validUntil: validUntil(),
+      network: currentNetwork(),
+      messages: [message],
+    };
+
+    log("signMessage request", req);
+    log("signMessage success", await ui.connector.signMessage(req), "ok");
+  } catch (e) {
+    log("signMessage error", e.message ?? String(e), "bad");
+  }
+};
+
+function updateNetworkWarning() {
+  const warn = $("network-warning");
+  if (isTestnetMode()) {
+    warn.textContent =
+      "Testnet mode is active. Only use testnet assets on testnet. Mainnet transfers are irreversible.";
+  } else {
+    warn.textContent =
+      "Mainnet mode is active. Transfers are irreversible. Confirm every address and amount before signing.";
+  }
+}
+
+$("target-network").onchange = () => {
+  updateNetworkWarning();
+  log(
+    "network changed",
+    `Target network is now ${isTestnetMode() ? "Testnet (-3)" : "Mainnet (-239)"}.`,
+  );
+};
+
+ui.onStatusChange((wallet) => {
+  if (wallet) {
+    $("dot").classList.add("on");
+    $("wallet-status").textContent = "Connected";
+    $("disconnect").classList.remove("hidden");
+
+    const chain = wallet.account.chain;
+    const chainLabel =
+      chain === TESTNET_CHAIN ? "Testnet" : chain === MAINNET_CHAIN ? "Mainnet" : "Other";
+
+    $("wallet-details").innerHTML = `
+      <div><strong>Address</strong> <span class="mono">${wallet.account.address}</span></div>
+      <div><strong>Chain</strong> <span class="mono">${chain} (${chainLabel})</span></div>
+      <div><strong>Wallet</strong> <span>${wallet.device?.appName ?? "—"}</span></div>
+      <div><strong>Features</strong> <span>${featureNames()}</span></div>
+      <div><strong>Max messages / request</strong> <span>${walletMaxMessages()}</span></div>
+    `;
+
+    log("connected", {
+      address: wallet.account.address,
+      chain: wallet.account.chain,
+      appName: wallet.device?.appName,
+      maxMessages: walletMaxMessages(),
+    });
+  } else {
+    $("dot").classList.remove("on");
+    $("wallet-status").textContent = "Not connected";
+    $("wallet-details").textContent = "";
+    $("disconnect").classList.add("hidden");
+  }
+});
+
+$("disconnect").onclick = async () => {
+  try {
+    await ui.disconnect();
+    log("disconnected", "Wallet disconnected.");
+  } catch (e) {
+    log("disconnect error", e.message ?? String(e), "bad");
+  }
+};
+
+$("clear-log").onclick = () => logEl.replaceChildren();
+
+updateNetworkWarning();
+log(
+  "ready",
+  "Toolkit loaded with TonEase wallet and the production manifest. Select a network, connect a wallet, and start testing.",
+  "ok",
+);
 </script>
 </body>
 </html>
