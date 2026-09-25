@@ -1,897 +1,490 @@
-<!doctype html>
-<html lang="en" dir="ltr">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>TON Connect Toolkit</title>
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
-<script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0e14">
+<title>TON Connect Test Suite</title>
 <style>
-  :root{
-    --bg:#0b0d12;--panel:#151923;--panel-2:#0e1118;--line:#293142;
-    --text:#f4f6fb;--muted:#9ba5b6;--accent:#7657ff;--accent-hover:#8a70ff;
-    --ok:#35ce91;--bad:#ff6262;--warn:#f1c75b;
-    --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
-    --radius:14px;--radius-sm:8px;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{
-    background:var(--bg);color:var(--text);
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    padding:24px 14px 90px;max-width:960px;margin-inline:auto;
-    line-height:1.5;font-size:14px;
-  }
-  header.top{
-    display:flex;justify-content:space-between;align-items:flex-start;
-    gap:16px;margin-bottom:22px;
-  }
-  header.top h1{font-size:24px;margin:0 0 6px;font-weight:800;letter-spacing:-0.4px}
-  header.top p{margin:0;color:var(--muted);font-size:13.5px;max-width:560px}
+:root{--bg:#0a0e14;--bg2:#12171f;--bg3:#1a2029;--in:#0d1219;--bd:#232a35;--tx:#e6ebf2;--tx2:#8a97a8;--tx3:#5c6878;--ac:#0098ea;--ach:#00b3ff;--ok:#22c55e;--er:#ef4444;--wn:#f59e0b;--in2:#3b82f6;--pu:#a78bfa;--pk:#ec4899;--r:8px;--rl:14px;--mono:'SF Mono',Monaco,Consolas,monospace;--hh:36px;--nh:30px;--ch:24px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{font:12px/1.4 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--tx);overflow:hidden;overscroll-behavior:none}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{font-size:16px!important}
+::-webkit-scrollbar{width:2px;height:2px}
+::-webkit-scrollbar-thumb{background:#2a333f;border-radius:1px}
 
-  .card{
-    background:var(--panel);border:1px solid var(--line);
-    border-radius:var(--radius);padding:18px;margin:14px 0;
-  }
-  .card h2{
-    font-size:14px;margin:0 0 4px;font-weight:700;
-    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-  }
-  .card h2 + .hint{margin-top:6px}
-  .card p{margin:0 0 12px}
-  .hint{font-size:12.5px;color:var(--muted);line-height:1.6;margin:0}
-  .warning{
-    border-inline-start:3px solid var(--warn);
-    padding:10px 12px;color:#f8df98;background:#2a2413;
-    border-radius:var(--radius-sm);font-size:12.5px;line-height:1.6;
-    margin:12px 0 0;
-  }
-  .badge{
-    font-size:11px;color:#c7bcff;background:#32266b;border-radius:999px;
-    padding:3px 9px;font-weight:600;letter-spacing:0.2px;
-  }
-  .badge.testnet{background:#2b3d2e;color:#8fd99f}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:env(safe-area-inset-top,0px)}
 
-  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-  .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
-  @media(max-width:700px){
-    .grid,.grid-3,.grid-4{grid-template-columns:1fr}
-    header.top{display:block}
-    #ton-connect-button{margin-top:14px}
-  }
+header{display:flex;align-items:center;justify-content:space-between;padding:0 6px;height:var(--hh);min-height:var(--hh);background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0;z-index:20}
+.logo{display:flex;align-items:center;gap:3px;font-weight:600;font-size:10px;flex-shrink:0}
+.logo-dot{width:4px;height:4px;border-radius:50%;background:var(--ac);box-shadow:0 0 3px var(--ac)}
+.hc{display:flex;align-items:center;gap:4px;flex-shrink:0;height:var(--ch)}
+.pill{display:inline-flex;align-items:center;gap:2px;height:var(--ch);padding:0 6px;border-radius:999px;font-size:9px;background:var(--bg3);border:1px solid var(--bd);color:var(--tx2)}
+.pill .d{width:3px;height:3px;border-radius:50%;background:var(--tx3)}
+.pill.on .d{background:var(--ok);box-shadow:0 0 2px var(--ok)}
+#net{height:var(--ch);padding:0 6px;background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);font-size:9px;max-width:58px}
+.tcw{height:var(--ch);display:flex;align-items:center;overflow:hidden}
+.tcw button{font-size:11px!important;transform:scale(.78);transform-origin:right center;white-space:nowrap}
 
-  label{
-    display:block;color:var(--muted);font-size:11.5px;font-weight:600;
-    margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.4px;
-  }
-  label:first-child{margin-top:0}
+.nav{display:flex;gap:3px;overflow-x:auto;padding:4px 6px;background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0;scrollbar-width:none;z-index:19}
+.nav::-webkit-scrollbar{display:none}
+.ni{padding:4px 8px;font-size:10px;color:var(--tx2);background:var(--bg3);border:1px solid var(--bd);border-radius:999px;cursor:pointer;white-space:nowrap;flex-shrink:0;user-select:none}
+.ni:active{background:var(--bd)}
+.ni.active{color:#fff;background:var(--ac);border-color:var(--ac)}
 
-  input,textarea,select{
-    width:100%;background:var(--panel-2);border:1px solid var(--line);
-    border-radius:var(--radius-sm);color:var(--text);padding:10px 12px;
-    font:inherit;font-size:13.5px;outline:none;
-    transition:border-color 120ms ease, box-shadow 120ms ease;
-  }
-  input:focus,textarea:focus,select:focus{
-    border-color:var(--accent);
-    box-shadow:0 0 0 3px rgba(118,87,255,0.15);
-  }
-  textarea{
-    min-height:96px;resize:vertical;
-    font-family:var(--mono);font-size:12.5px;line-height:1.55;
-  }
-  input::placeholder,textarea::placeholder{color:#5c6675}
-  select{cursor:pointer}
-  select option{background:var(--panel-2)}
+main{flex:1;overflow-y:auto;padding:6px;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+.ch-{margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--bd)}
+.ch- h1{font-size:13px;font-weight:600;margin-bottom:2px}
+.ch- p{color:var(--tx2);font-size:10px;line-height:1.35}
+section{margin-bottom:6px;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden;scroll-margin-top:6px}
+.sh{padding:5px 6px;border-bottom:1px solid var(--bd);background:var(--bg3)}
+.sh h2{font-size:10.5px;font-weight:600;margin-bottom:2px;display:flex;align-items:center;gap:3px;flex-wrap:wrap}
+.sh .tag{font-size:8px;font-weight:500;padding:1px 3px;border-radius:4px;background:var(--bg);color:var(--tx3);border:1px solid var(--bd);text-transform:uppercase;letter-spacing:.3px}
+.tag.b{color:var(--in2);border-color:rgba(59,130,246,.3)}.tag.g{color:var(--ok);border-color:rgba(34,197,94,.3)}.tag.p{color:var(--pu);border-color:rgba(167,139,250,.3)}.tag.k{color:var(--pk);border-color:rgba(236,72,153,.3)}.tag.o{color:var(--wn);border-color:rgba(245,158,11,.3)}
+.sh p{color:var(--tx2);font-size:9.5px;line-height:1.35}
+.sb{padding:6px}
+.fg{display:grid;grid-template-columns:1fr;gap:5px;margin-bottom:5px}
+.f{display:flex;flex-direction:column;gap:2px;min-width:0}
+.f.full{grid-column:1/-1}
+.f label{font-size:9px;font-weight:500;color:var(--tx2);text-transform:uppercase;letter-spacing:.3px}
+.f input,.f select,.f textarea{padding:6px 8px;background:var(--in);border:1px solid var(--bd);border-radius:var(--r);font-size:13px;outline:none;width:100%;font-family:var(--mono)}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--ac)}
+.f textarea{font-size:11px!important;resize:vertical;min-height:46px;line-height:1.35}
+.ac{display:flex;gap:5px;flex-wrap:wrap}
+.btn{flex:1;min-width:fit-content;min-height:32px;padding:7px 10px;border-radius:var(--r);border:1px solid var(--bd);background:var(--bg3);color:var(--tx);font-weight:500;font-size:11.5px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:3px;white-space:nowrap;user-select:none}
+.btn:active:not(:disabled){background:var(--bd);transform:scale(.98)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:#fff}
+.btn.pri:active:not(:disabled){background:var(--ach)}
+.btn.gh{background:transparent;flex:0 1 auto}
+.res{margin-top:5px;padding:5px 6px;border-radius:var(--r);font-size:9.5px;font-family:var(--mono);border:1px solid var(--bd);background:var(--in);white-space:pre-wrap;word-break:break-all;max-height:120px;overflow-y:auto;line-height:1.4}
+.res.ok{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.05);color:#a7f3c9}
+.res.er{border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.05);color:#fecaca}
 
-  .row{display:flex;gap:10px;align-items:end}
-  .row > *{flex:1}
+.log-bar{position:fixed;bottom:0;left:0;right:0;height:var(--nh);background:var(--bg2);border-top:1px solid var(--bd);display:flex;align-items:center;padding:0 6px;gap:5px;z-index:30;padding-bottom:env(safe-area-inset-bottom,0px)}
+.log-bar h3{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2);flex-shrink:0}
+.log-bar .count{font-size:9px;color:var(--tx3);font-family:var(--mono);flex:1}
+.log-bar button{height:22px;padding:0 8px;font-size:10px;background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx2);cursor:pointer}
+.log-bar button:active{background:var(--bd)}
+.log-panel{position:fixed;left:0;right:0;bottom:0;top:auto;height:70vh;height:70dvh;background:var(--bg2);border-top:1px solid var(--bd);border-radius:var(--rl) var(--rl) 0 0;display:flex;flex-direction:column;z-index:40;transform:translateY(100%);transition:transform .2s;padding-bottom:env(safe-area-inset-bottom,0px)}
+.log-panel.open{transform:translateY(0)}
+.log-panel .lh{display:flex;align-items:center;justify-content:space-between;padding:5px 6px;border-bottom:1px solid var(--bd);background:var(--bg3);flex-shrink:0;border-radius:var(--rl) var(--rl) 0 0}
+.log-panel .lh h3{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2)}
+.log-panel .lt{display:flex;gap:4px}
+.log-panel .lt button{height:22px;padding:0 7px;font-size:10px;background:transparent;border:1px solid var(--bd);border-radius:var(--r);color:var(--tx2);cursor:pointer}
+.ll{flex:1;overflow-y:auto;padding:4px 0;font-family:var(--mono);font-size:10px;-webkit-overflow-scrolling:touch}
+.le{padding:3px 6px;border-bottom:1px solid rgba(35,42,53,.5);display:grid;grid-template-columns:40px 10px 1fr;gap:3px;align-items:flex-start}
+.le .ts{color:var(--tx3);font-size:9px}
+.le .lv{font-weight:700;text-align:center;font-size:10px}
+.le.info .lv{color:var(--in2)}.le.success .lv{color:var(--ok)}.le.error .lv{color:var(--er)}.le.warn .lv{color:var(--wn)}
+.le .ms{color:var(--tx);word-break:break-word;font-size:10px}
+.le .dt{margin-top:2px;padding:3px 5px;background:var(--in);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx2);font-size:9px;white-space:pre-wrap;word-break:break-all;max-height:100px;overflow-y:auto;line-height:1.35}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:35;opacity:0;pointer-events:none;transition:opacity .2s}
+.backdrop.open{opacity:1;pointer-events:auto}
+.wi{display:grid;gap:4px;font-size:10px}
+.wr{display:grid;grid-template-columns:64px 1fr;gap:5px;align-items:start}
+.wr .k{color:var(--tx3);font-size:9px;text-transform:uppercase;letter-spacing:.3px}
+.wr .v{font-family:var(--mono);font-size:9.5px;color:var(--tx);word-break:break-all}
+.es{padding:10px 6px;text-align:center;color:var(--tx3);font-size:10px}
+.fl{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
+.fb{font-size:8px;padding:2px 4px;border-radius:4px;background:var(--bg);border:1px solid var(--bd);color:var(--tx2);font-family:var(--mono)}
+.fb.on{color:var(--ok);border-color:rgba(34,197,94,.3)}
+.fb.off{opacity:.4}
 
-  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-
-  button{
-    border:0;border-radius:10px;padding:10px 16px;background:var(--accent);
-    color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;
-    font-family:inherit;transition:background-color 120ms ease, transform 80ms ease;
-    display:inline-flex;align-items:center;gap:6px;
-  }
-  button:hover:not(:disabled){background:var(--accent-hover)}
-  button:active:not(:disabled){transform:scale(0.98)}
-  button:disabled{opacity:.45;cursor:not-allowed}
-  button.secondary{
-    background:transparent;border:1px solid var(--line);color:var(--text);
-  }
-  button.secondary:hover:not(:disabled){background:var(--panel-2);border-color:#3a4659}
-  button.danger{background:#632b39}
-  button.danger:hover:not(:disabled){background:#7a3346}
-
-  .status{
-    display:flex;align-items:center;gap:10px;
-    font-size:13.5px;margin-bottom:12px;
-  }
-  .dot{
-    display:inline-block;width:9px;height:9px;border-radius:50%;
-    background:var(--bad);box-shadow:0 0 0 4px rgba(255,98,98,0.15);
-    transition:background-color 200ms ease, box-shadow 200ms ease;
-    flex-shrink:0;
-  }
-  .dot.on{
-    background:var(--ok);
-    box-shadow:0 0 0 4px rgba(53,206,145,0.15);
-  }
-
-  #wallet-details{margin-top:10px}
-  #wallet-details div{
-    font-size:12.5px;color:var(--muted);
-    padding:5px 0;border-bottom:1px solid var(--line);
-    display:flex;gap:8px;flex-wrap:wrap;
-  }
-  #wallet-details div:last-child{border-bottom:0}
-  #wallet-details div strong{
-    color:var(--text);font-weight:600;flex-shrink:0;
-  }
-  #wallet-details .mono{color:#c7bcff}
-
-  .mono{
-    font-family:var(--mono);font-size:12.5px;
-    word-break:break-all;text-align:left;direction:ltr;
-  }
-  .hidden{display:none !important}
-
-  #log{
-    background:var(--panel-2);border:1px solid var(--line);
-    border-radius:var(--radius-sm);padding:0 12px;
-    max-height:340px;overflow-y:auto;
-    font-family:var(--mono);font-size:11.5px;line-height:1.6;
-    direction:ltr;text-align:left;
-  }
-  #log:empty::before{
-    content:"No events yet. Events will appear here as you interact.";
-    color:var(--muted);display:block;padding:14px 0;font-style:italic;
-  }
-  .entry{
-    border-bottom:1px solid var(--line);
-    padding:10px 0;white-space:pre-wrap;word-break:break-word;
-  }
-  .entry:last-child{border-bottom:0}
-  .entry-time{color:#5c6675;margin-bottom:4px}
-  .entry-tag{color:#c7bcff;font-weight:600}
-  .ok{color:var(--ok)}
-  .bad{color:var(--bad)}
-  .muted{color:var(--muted)}
-  .warn{color:var(--warn)}
+@media(min-width:640px){
+  .fg{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .f.full{grid-column:1/-1}
+  .btn{flex:0 1 auto}
+  main{padding:8px}
+}
+@media(min-width:900px){
+  :root{--hh:38px}
+  .app{display:grid;grid-template-columns:140px 1fr 270px;grid-template-rows:var(--hh) 1fr;grid-template-areas:"h h h" "s m l";height:100vh}
+  header{grid-area:h}
+  .nav{grid-area:s;display:block;overflow-y:auto;overflow-x:hidden;padding:6px 0;border-bottom:none;border-right:1px solid var(--bd);height:auto}
+  .ni{display:block;border:none;border-radius:0;background:transparent;padding:4px 8px;font-size:10px;border-left:2px solid transparent}
+  .ni.active{background:rgba(0,152,234,.06);border-left-color:var(--ac);color:var(--ac)}
+  main{grid-area:m;padding:10px;padding-bottom:10px}
+  .fg{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}
+  .log-bar{position:static;height:auto;border-top:none;padding:0;background:transparent}
+  .log-bar h3,.log-bar .count,.log-bar button{display:none}
+  .log-panel{position:static;height:auto;transform:none;grid-area:l;border-top:none;border-left:1px solid var(--bd);border-radius:0;padding-bottom:0;transition:none}
+  .log-panel .lh{border-radius:0}
+  .log-panel .lh .close{display:none}
+  .backdrop{display:none}
+  .ch- h1{font-size:15px}
+  .sh h2{font-size:11.5px}
+}
+@media(min-width:1200px){
+  .app{grid-template-columns:160px 1fr 310px}
+  main{padding:12px 14px}
+}
 </style>
 </head>
 <body>
-
-<header class="top">
-  <div>
-    <h1>TON Connect Toolkit</h1>
-    <p>
-      Test bench for TON Connect — wallet connection, TON transfers, Jetton & NFT transfers,
-      batch messages, signData / signMessage flows, on mainnet or testnet.
-    </p>
-  </div>
-  <div id="ton-connect-button"></div>
+<div class="app">
+<header>
+<div class="logo"><div class="logo-dot"></div>TON Connect</div>
+<div class="hc">
+<span class="pill" id="ws"><span class="d"></span><span id="wst">Off</span></span>
+<select id="net"><option value="testnet">Test</option><option value="mainnet">Main</option></select>
+<div class="tcw" id="ton-connect-button"></div>
+</div>
 </header>
 
-<section class="card">
-  <h2>Network</h2>
-  <p class="hint">
-    Select the network this toolkit targets. Every request (sendTransaction, signData,
-    signMessage) will carry this network ID and the wallet will refuse a mismatch.
-  </p>
-  <div class="grid grid-3">
-    <div>
-      <label for="target-network">Target network</label>
-      <select id="target-network">
-        <option value="-239">Mainnet (-239)</option>
-        <option value="-3">Testnet (-3)</option>
-      </select>
-    </div>
-  </div>
-  <p class="warning" id="network-warning">
-    Testnet mode is active. Only use testnet assets on testnet. Mainnet transfers are irreversible.
-  </p>
+<nav class="nav">
+<a class="ni active" data-target="connection">Connect</a>
+<a class="ni" data-target="simple-ton">TON</a>
+<a class="ni" data-target="ton-comment">Comment</a>
+<a class="ni" data-target="multi-message">Multi</a>
+<a class="ni" data-target="raw-jetton">Jetton</a>
+<a class="ni" data-target="raw-nft">NFT</a>
+<a class="ni" data-target="items-ton">Item-TON</a>
+<a class="ni" data-target="items-jetton">Item-JT</a>
+<a class="ni" data-target="items-nft">Item-NFT</a>
+<a class="ni" data-target="items-mixed">Mixed</a>
+<a class="ni" data-target="extra-currency">Extra</a>
+<a class="ni" data-target="sign-message">signMsg</a>
+<a class="ni" data-target="batch-stress">Batch</a>
+<a class="ni" data-target="sign-data-text">SData-Txt</a>
+<a class="ni" data-target="sign-data-binary">SData-Bin</a>
+<a class="ni" data-target="sign-data-cell">SData-Cell</a>
+<a class="ni" data-target="custom-json">Custom</a>
+</nav>
+
+<main id="main">
+<div class="ch-"><h1>TON Connect Test Suite</h1><p>sendTransaction, signMessage, signData, raw messages, structured items, batches, extra currencies.</p></div>
+
+<section id="connection">
+<div class="sh"><h2>Connection <span class="tag b">connect</span></h2><p>Wallet state and features.</p></div>
+<div class="sb"><div id="wi"><div class="es">Not connected. Tap the button above.</div></div></div>
 </section>
 
-<section class="card">
-  <h2>Wallet connection</h2>
-  <div class="status">
-    <span class="dot" id="dot"></span>
-    <span id="wallet-status">Not connected</span>
-  </div>
-  <div id="wallet-details" class="hint"></div>
-  <div class="actions">
-    <button id="disconnect" class="secondary hidden">Disconnect wallet</button>
-  </div>
-</section>
+<section id="simple-ton">
+<div class="sh"><h2>Simple TON <span class="tag g">sendTransaction</span></h2><p>Send TON without comment.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>Recipient</label><input id="simple-to" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f"><label>Amount (TON)</label><input id="simple-amount" value="0.05" inputmode="decimal"></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="simple-ton">Send</button><button class="btn gh" data-copy="simple-ton">Copy</button></div>
+<div class="res" id="result-simple-ton" style="display:none"></div>
+</div></section>
 
-<section class="card">
-  <h2>
-    Send TON
-    <span class="badge">raw messages</span>
-  </h2>
-  <p class="hint">
-    Uses the official <code>messages</code> request shape. Addresses are normalized to
-    TEP-2 friendly form and amounts converted to nanoTON.
-  </p>
+<section id="ton-comment">
+<div class="sh"><h2>TON + Comment <span class="tag g">sendTransaction</span></h2><p>Payload op=0 + text.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>Recipient</label><input id="comment-to" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f"><label>Amount (TON)</label><input id="comment-amount" value="0.05" inputmode="decimal"></div>
+<div class="f full"><label>Comment</label><input id="comment-text" value="Hello from TON Connect test suite"></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="ton-comment">Send</button><button class="btn gh" data-copy="ton-comment">Copy</button></div>
+<div class="res" id="result-ton-comment" style="display:none"></div>
+</div></section>
 
-  <div class="grid">
-    <div>
-      <label for="bulk-recipient">Recipient address</label>
-      <input id="bulk-recipient" placeholder="EQ… or UQ…" autocomplete="off" spellcheck="false" />
-    </div>
-    <div>
-      <label for="bulk-amount">Amount per message (TON)</label>
-      <input id="bulk-amount" inputmode="decimal" placeholder="0.01" autocomplete="off" />
-    </div>
-    <div>
-      <label for="bulk-count">Message count (1–254)</label>
-      <input id="bulk-count" type="number" min="1" max="254" value="1" inputmode="numeric" />
-    </div>
-    <div>
-      <label for="bulk-comment">Optional comment</label>
-      <input id="bulk-comment" placeholder="payment" autocomplete="off" />
-    </div>
-  </div>
+<section id="multi-message">
+<div class="sh"><h2>Multi-message <span class="tag g">sendTransaction</span></h2><p>Test maxMessages limit.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>Messages JSON</label><textarea id="multi-json" spellcheck="false"></textarea></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="multi-message">Send</button><button class="btn gh" data-action="multi-message-generate">Gen 5</button><button class="btn gh" data-copy="multi-message">Copy</button></div>
+<div class="res" id="result-multi-message" style="display:none"></div>
+</div></section>
 
-  <div class="actions">
-    <button id="send-one">Send single message</button>
-    <button id="send-bulk" class="secondary">Build batch (N messages)</button>
-  </div>
+<section id="raw-jetton">
+<div class="sh"><h2>Jetton (Raw) <span class="tag p">messages</span></h2><p>TEP-74 on sender's jetton wallet.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>Jetton wallet</label><input id="rjetton-wallet" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f full"><label>Recipient</label><input id="rjetton-to" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f"><label>Amount</label><input id="rjetton-amount" value="1000000" inputmode="numeric"></div>
+<div class="f"><label>Attach TON</label><input id="rjetton-attach" value="0.05" inputmode="decimal"></div>
+<div class="f full"><label>Response dest</label><input id="rjetton-response" placeholder="defaults to sender" autocomplete="off" spellcheck="false"></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="raw-jetton">Send</button><button class="btn gh" data-copy="raw-jetton">Copy</button></div>
+<div class="res" id="result-raw-jetton" style="display:none"></div>
+</div></section>
 
-  <p class="warning">
-    The app reads <code>SendTransaction.maxMessages</code> from the connected wallet and
-    automatically splits the batch into multiple requests. Each request requires a separate
-    wallet approval. 254 is a protocol ceiling, not a universal wallet limit.
-  </p>
-</section>
+<section id="raw-nft">
+<div class="sh"><h2>NFT (Raw) <span class="tag p">messages</span></h2><p>TEP-62 on NFT item.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>NFT item</label><input id="rnft-item" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f full"><label>New owner</label><input id="rnft-newowner" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f"><label>Attach TON</label><input id="rnft-attach" value="0.05" inputmode="decimal"></div>
+<div class="f"><label>Forward (nTON)</label><input id="rnft-forward" value="1" inputmode="numeric"></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="raw-nft">Send</button><button class="btn gh" data-copy="raw-nft">Copy</button></div>
+<div class="res" id="result-raw-nft" style="display:none"></div>
+</div></section>
 
-<section class="card">
-  <h2>
-    Send Jetton
-    <span class="badge">TEP-74</span>
-  </h2>
-  <p class="hint">
-    Requires the <strong>sender Jetton Wallet</strong> address (not the Jetton Master).
-    The transfer body is built per TEP-74 with <code>forward_ton_amount</code> = 1 nanoTON.
-  </p>
+<section id="items-ton">
+<div class="sh"><h2>TON Item <span class="tag o">items (unverified)</span></h2><p>Wallet resolves payload. Not confirmed in official SDK types — test against your target wallet first.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>Recipient</label><input id="iton-to" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f"><label>Amount (TON)</label><input id="iton-amount" value="0.05" inputmode="decimal"></div>
+<div class="f full"><label>Comment (opt)</label><input id="iton-comment"></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="items-ton">Send</button><button class="btn gh" data-copy="items-ton">Copy</button></div>
+<div class="res" id="result-items-ton" style="display:none"></div>
+</div></section>
 
-  <div class="grid">
-    <div>
-      <label for="jetton-wallet">Sender Jetton Wallet</label>
-      <input id="jetton-wallet" placeholder="EQ…" autocomplete="off" spellcheck="false" />
-    </div>
-    <div>
-      <label for="jetton-recipient">Recipient address</label>
-      <input id="jetton-recipient" placeholder="EQ…" autocomplete="off" spellcheck="false" />
-    </div>
-    <div>
-      <label for="jetton-amount">Amount (decimal units)</label>
-      <input id="jetton-amount" placeholder="10.5" inputmode="decimal" autocomplete="off" />
-    </div>
-    <div>
-      <label for="jetton-decimals">Decimals</label>
-      <input id="jetton-decimals" type="number" value="9" min="0" max="30" inputmode="numeric" />
-    </div>
-  </div>
+<section id="items-jetton">
+<div class="sh"><h2>Jetton Item <span class="tag o">items (unverified)</span></h2><p>Provide master; wallet resolves.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>Jetton master</label><input id="ijetton-master" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f full"><label>Destination</label><input id="ijetton-dest" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f"><label>Amount</label><input id="ijetton-amount" value="1000000" inputmode="numeric"></div>
+<div class="f"><label>Attach TON</label><input id="ijetton-attach" placeholder="auto" inputmode="decimal"></div>
+<div class="f"><label>Forward</label><input id="ijetton-forward" placeholder="auto" inputmode="numeric"></div>
+<div class="f"><label>Query ID</label><input id="ijetton-queryid" placeholder="0" inputmode="numeric"></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="items-jetton">Send</button><button class="btn gh" data-copy="items-jetton">Copy</button></div>
+<div class="res" id="result-items-jetton" style="display:none"></div>
+</div></section>
 
-  <label for="jetton-comment">Optional comment</label>
-  <input id="jetton-comment" placeholder="payment" autocomplete="off" />
+<section id="items-nft">
+<div class="sh"><h2>NFT Item <span class="tag o">items (unverified)</span></h2><p>Wallet builds TEP-62.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>NFT item</label><input id="inft-address" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f full"><label>New owner</label><input id="inft-newowner" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f"><label>Attach TON</label><input id="inft-attach" placeholder="auto" inputmode="decimal"></div>
+<div class="f"><label>Forward</label><input id="inft-forward" placeholder="auto" inputmode="numeric"></div>
+<div class="f full"><label>Query ID</label><input id="inft-queryid" placeholder="0" inputmode="numeric"></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="items-nft">Send</button><button class="btn gh" data-copy="items-nft">Copy</button></div>
+<div class="res" id="result-items-nft" style="display:none"></div>
+</div></section>
 
-  <div class="actions">
-    <button id="send-jetton">Review &amp; send Jetton</button>
-  </div>
-</section>
+<section id="items-mixed">
+<div class="sh"><h2>Mixed Items <span class="tag o">items (unverified)</span></h2><p>TON + Jetton + NFT in one request.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>TON recipient</label><input id="mixed-ton-to" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f full"><label>Jetton master</label><input id="mixed-jetton-master" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f full"><label>Jetton dest</label><input id="mixed-jetton-dest" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f full"><label>NFT item</label><input id="mixed-nft-address" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f full"><label>NFT new owner</label><input id="mixed-nft-newowner" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="items-mixed">Send</button><button class="btn gh" data-copy="items-mixed">Copy</button></div>
+<div class="res" id="result-items-mixed" style="display:none"></div>
+</div></section>
 
-<section class="card">
-  <h2>
-    Send NFT
-    <span class="badge">TEP-62</span>
-  </h2>
-  <p class="hint">
-    Builds a TEP-62 ownership-assignment body. Attached TON is used for forward fees
-    and the response destination.
-  </p>
+<section id="extra-currency">
+<div class="sh"><h2>Extra Currency <span class="tag k">advanced</span></h2><p>Rarely used on mainnet.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>Recipient</label><input id="ec-to" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f"><label>TON amount</label><input id="ec-ton" value="0.05" inputmode="decimal"></div>
+<div class="f"><label>Currency ID</label><input id="ec-id" placeholder="239" inputmode="numeric"></div>
+<div class="f full"><label>Currency amount</label><input id="ec-amount" placeholder="1000000000" inputmode="numeric"></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="extra-currency">Send</button><button class="btn gh" data-copy="extra-currency">Copy</button></div>
+<div class="res" id="result-extra-currency" style="display:none"></div>
+</div></section>
 
-  <div class="grid">
-    <div>
-      <label for="nft-item">NFT item address</label>
-      <input id="nft-item" placeholder="EQ…" autocomplete="off" spellcheck="false" />
-    </div>
-    <div>
-      <label for="nft-owner">New owner address</label>
-      <input id="nft-owner" placeholder="EQ…" autocomplete="off" spellcheck="false" />
-    </div>
-    <div>
-      <label for="nft-response">Excess return address</label>
-      <input id="nft-response" placeholder="Leave blank to use your wallet" autocomplete="off" spellcheck="false" />
-    </div>
-    <div>
-      <label for="nft-forward">Forward amount (TON)</label>
-      <input id="nft-forward" value="0.000000001" inputmode="decimal" autocomplete="off" />
-    </div>
-  </div>
+<section id="sign-message">
+<div class="sh"><h2>signMessage <span class="tag k">Wallet v5 only</span></h2><p>Signs without broadcasting; returns internalBoc. Confirm wallet advertises this feature before relying on it.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>Recipient</label><input id="sm-to" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f"><label>Amount (TON)</label><input id="sm-amount" value="0.05" inputmode="decimal"></div>
+<div class="f full"><label>Comment (opt)</label><input id="sm-comment"></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="sign-message">Sign</button><button class="btn gh" data-copy="sign-message">Copy</button></div>
+<div class="res" id="result-sign-message" style="display:none"></div>
+</div></section>
 
-  <label for="nft-comment">Optional comment</label>
-  <input id="nft-comment" placeholder="gift" autocomplete="off" />
+<section id="batch-stress">
+<div class="sh"><h2>Batch Stress <span class="tag k">advanced</span></h2><p>Test maxMessages limits.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>Recipient</label><input id="stress-to" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f"><label>Count</label><input type="number" id="stress-count" value="5" min="1" max="255" inputmode="numeric"></div>
+<div class="f"><label>Per-msg TON</label><input id="stress-amount" value="0.01" inputmode="decimal"></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="batch-stress">Send</button><button class="btn gh" data-copy="batch-stress">Copy</button></div>
+<div class="res" id="result-batch-stress" style="display:none"></div>
+</div></section>
 
-  <div class="actions">
-    <button id="send-nft">Review &amp; transfer NFT</button>
-  </div>
-</section>
+<section id="sign-data-text">
+<div class="sh"><h2>signData: Text <span class="tag p">signData</span></h2><p>TEP-81 txt prefix.</p></div>
+<div class="sb">
+<div class="fg"><div class="f full"><label>Text</label><textarea id="sdt-text" spellcheck="false">Hello from TON Connect test suite</textarea></div></div>
+<div class="ac"><button class="btn pri" data-action="sign-data-text">Sign</button><button class="btn gh" data-copy="sign-data-text">Copy</button></div>
+<div class="res" id="result-sign-data-text" style="display:none"></div>
+</div></section>
 
-<section class="card">
-  <h2>Signing</h2>
+<section id="sign-data-binary">
+<div class="sh"><h2>signData: Binary <span class="tag p">signData</span></h2><p>TEP-81 bin. Input is base64.</p></div>
+<div class="sb">
+<div class="fg"><div class="f full"><label>Base64 bytes</label><textarea id="sdb-bytes" spellcheck="false">SGVsbG8gd29ybGQ=</textarea></div></div>
+<div class="ac"><button class="btn pri" data-action="sign-data-binary">Sign</button><button class="btn gh" data-copy="sign-data-binary">Copy</button></div>
+<div class="res" id="result-sign-data-binary" style="display:none"></div>
+</div></section>
 
-  <div class="grid grid-3">
-    <div>
-      <label for="sign-type">signData type</label>
-      <select id="sign-type">
-        <option value="text">text</option>
-        <option value="binary">binary / base64</option>
-        <option value="cell">cell / TL-B + base64 BoC</option>
-      </select>
-    </div>
-    <div>
-      <label for="sign-from">from (optional)</label>
-      <input id="sign-from" placeholder="Defaults to connected wallet" autocomplete="off" spellcheck="false" />
-    </div>
-    <div>
-      <label for="sign-network">signData network</label>
-      <select id="sign-network">
-        <option value="">Use target network</option>
-        <option value="-239">Mainnet (-239)</option>
-        <option value="-3">Testnet (-3)</option>
-      </select>
-    </div>
-  </div>
+<section id="sign-data-cell">
+<div class="sh"><h2>signData: Cell <span class="tag p">signData</span></h2><p>Schema + base64 BoC.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>Schema</label><input id="sdc-schema" value="my-schema"></div>
+<div class="f full"><label>Cell (base64)</label><textarea id="sdc-cell" spellcheck="false" placeholder="te6cck..."></textarea></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="sign-data-cell">Sign</button><button class="btn gh" data-copy="sign-data-cell">Copy</button></div>
+<div class="res" id="result-sign-data-cell" style="display:none"></div>
+</div></section>
 
-  <div id="schema-wrap" class="hidden">
-    <label for="sign-schema">TL-B schema</label>
-    <input id="sign-schema" placeholder="msg#_ text:string = Msg;" autocomplete="off" />
-  </div>
+<section id="custom-json">
+<div class="sh"><h2>Custom JSON <span class="tag">advanced</span></h2><p>Paste any raw payload.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f"><label>Method</label><select id="custom-method"><option value="sendTransaction">sendTransaction</option><option value="signMessage">signMessage</option><option value="signData">signData</option></select></div>
+<div class="f full"><label>Payload</label><textarea id="custom-payload" spellcheck="false" style="min-height:80px"></textarea></div>
+</div>
+<div class="ac"><button class="btn pri" data-action="custom-json">Send</button></div>
+<div class="res" id="result-custom-json" style="display:none"></div>
+</div></section>
+</main>
 
-  <label for="sign-payload">Payload</label>
-  <textarea id="sign-payload" placeholder="hello TON" spellcheck="false"></textarea>
+<div class="log-bar" id="log-bar">
+<h3>Log</h3>
+<span class="count" id="log-count">0 events</span>
+<button id="log-open">Open</button>
+<button id="log-clear-bar">Clear</button>
+</div>
+<div class="backdrop" id="backdrop"></div>
+<div class="log-panel" id="log-panel">
+<div class="lh">
+<h3>Activity Log</h3>
+<div class="lt">
+<button id="log-copy">Copy</button>
+<button id="log-clear">Clear</button>
+<button class="close" id="log-close">Close</button>
+</div>
+</div>
+<div class="ll" id="log-list"><div class="es">No activity yet.</div></div>
+</div>
+</div>
 
-  <div class="actions">
-    <button id="sign-data">Sign Data</button>
-    <button id="sign-message" class="secondary">Sign Message</button>
-  </div>
-
-  <p class="warning">
-    <strong>signMessage</strong> is not part of the base TON Connect protocol and is only
-    supported by a few wallets. The button will fail gracefully if your wallet doesn't
-    declare the corresponding feature.
-  </p>
-</section>
-
-<section class="card">
-  <h2>Event log</h2>
-  <div id="log"></div>
-  <div class="actions">
-    <button id="clear-log" class="secondary">Clear log</button>
-  </div>
-</section>
-
+<script src="https://cdn.jsdelivr.net/npm/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 <script type="module">
-import { Address, beginCell, toNano } from "https://esm.sh/@ton/core@0.60.0";
+import { Address, beginCell, toNano } from 'https://cdn.jsdelivr.net/npm/@ton/core@0.56.0/+esm';
 
-const MAINNET_CHAIN = "-239";
-const TESTNET_CHAIN = "-3";
-const MAX_REQUEST_MESSAGES = 254;
-const MANIFEST_URL =
-  "https://raw.githubusercontent.com/CoreEase/assets/refs/heads/main/assets/tonconnect-manifest.json";
+const MANIFEST='https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json';
+const NET={testnet:'-3',mainnet:'-239'};
+const S={network:'testnet',connected:false,account:null,wallet:null,device:null};
+const LL=document.getElementById('log-list');
+const LP=document.getElementById('log-panel');
+const BD=document.getElementById('backdrop');
+const LC=document.getElementById('log-count');
+let LE=[];
+const LVL={info:'i',success:'+',error:'x',warn:'!'};
 
-const ui = new TON_CONNECT_UI.TonConnectUI({
-  manifestUrl: MANIFEST_URL,
-  buttonRootId: "ton-connect-button",
-  walletsListConfiguration: {
-    includeWallets: [
-      {
-        appName: "tonease",
-        name: "TonEase",
-        imageUrl:
-          "https://raw.githubusercontent.com/CoreEase/assets/refs/heads/main/assets/logo.webp",
-        aboutUrl: "https://gram-wallet.vercel.app",
-        universalLink: "https://t.me/TonEaseBot?attach=wallet",
-        bridgeUrl: "https://connect.ton.org/bridge",
-        platforms: ["chrome", "android", "ios", "macos", "windows", "linux"],
-      },
-    ],
-  },
-});
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fmt(d){if(d instanceof Error)return d.name+': '+d.message;if(typeof d==='string')return d;try{return JSON.stringify(d,null,2)}catch{return String(d)}}
+function log(l,m,d){LE.push({ts:new Date().toLocaleTimeString('en-GB',{hour12:false}),level:l,message:m,data:d});rlog();LL.scrollTop=LL.scrollHeight}
+function rlog(){
+if(!LE.length){LL.innerHTML='<div class="es">No activity yet.</div>';LC.textContent='0 events';return}
+LC.textContent=LE.length+(LE.length===1?' event':' events');
+LL.innerHTML=LE.map(e=>`<div class="le ${e.level}"><span class="ts">${e.ts}</span><span class="lv">${LVL[e.level]||'.'}</span><div><div class="ms">${esc(e.message)}</div>${e.data?`<div class="dt">${esc(fmt(e.data))}</div>`:''}</div></div>`).join('')}
 
-const $ = (id) => document.getElementById(id);
-const logEl = $("log");
+function openLog(){LP.classList.add('open');BD.classList.add('open')}
+function closeLog(){LP.classList.remove('open');BD.classList.remove('open')}
+BD.addEventListener('click',closeLog);
+document.getElementById('log-open').addEventListener('click',openLog);
+document.getElementById('log-close').addEventListener('click',closeLog);
 
-function log(tag, value, kind = "") {
-  const wrap = document.createElement("div");
-  wrap.className = `entry ${kind}`;
+let tcUI=null;
+function initTC(){
+if(typeof TON_CONNECT_UI==='undefined'){log('error','TON Connect UI failed to load');return}
+tcUI=new TON_CONNECT_UI.TonConnectUI({manifestUrl:MANIFEST,buttonRootId:'ton-connect-button',uiPreferences:{theme:'DARK'}});
+tcUI.onStatusChange(w=>{
+S.wallet=w;
+if(w){S.connected=true;S.account=w.account;S.device=w.device;
+log('success','Wallet connected',{address:w.account.address,chain:w.account.chain});
+upd('on','Connected');rwi()}
+else{S.connected=false;S.account=null;S.device=null;log('info','Wallet disconnected');upd('','Off');rwi()}});
+log('info','TON Connect initialized')}
+function upd(c,t){document.getElementById('ws').className='pill '+c;document.getElementById('wst').textContent=t}
+function rwi(){
+const c=document.getElementById('wi');
+if(!S.connected||!S.account){c.innerHTML='<div class="es">Not connected. Tap the button above.</div>';return}
+const a=S.account,d=S.device;
+const fh=d?.features?.map(f=>{const n=typeof f==='string'?f:f.name;const dt=typeof f==='object'&&f.itemTypes?` [${f.itemTypes.join(',')}]`:'';const mm=typeof f==='object'&&f.maxMessages?` max=${f.maxMessages}`:'';return `<span class="fb on">${n}${dt}${mm}</span>`}).join('')||'<span class="fb off">no features</span>';
+c.innerHTML=`<div class="wi"><div class="wr"><span class="k">Address</span><span class="v">${a.address}</span></div><div class="wr"><span class="k">Chain</span><span class="v">${a.chain}</span></div>${a.publicKey?`<div class="wr"><span class="k">Public Key</span><span class="v">${a.publicKey}</span></div>`:''}${d?`<div class="wr"><span class="k">App</span><span class="v">${d.appName} v${d.appVersion} (${d.platform})</span></div><div class="wr"><span class="k">Protocol</span><span class="v">max v${d.maxProtocolVersion}</span></div><div class="wr"><span class="k">Features</span><div class="v"><div class="fl">${fh}</div></div></div>`:''}</div>`}
 
-  const time = document.createElement("div");
-  time.className = "entry-time";
-  time.textContent = `[${new Date().toLocaleTimeString()}]`;
+const chi=()=>NET[S.network];
+const vu=()=>Math.floor(Date.now()/1000)+360;
+const t2n=s=>toNano(s).toString();
+const cb=t=>beginCell().storeUint(0,32).storeStringTail(t).endCell().toBoc().toString('base64');
+function bj(a,to,resp,fw=1n){return beginCell().storeUint(0x0f8a7ea5,32).storeUint(0n,64).storeCoins(BigInt(a)).storeAddress(Address.parse(to)).storeAddress(Address.parse(resp)).storeBit(0).storeCoins(fw).storeBit(0).endCell().toBoc().toString('base64')}
+function bn(no,resp,fw=1n){return beginCell().storeUint(0x5fcc3d14,32).storeUint(BigInt(Date.now()),64).storeAddress(Address.parse(no)).storeAddress(Address.parse(resp)).storeBit(0).storeCoins(fw).storeBit(0).endCell().toBoc().toString('base64')}
+function sr(id,ok,c){const b=document.getElementById('result-'+id);if(!b)return;b.style.display='block';b.className='res '+(ok?'ok':'er');b.textContent=typeof c==='string'?c:JSON.stringify(c,null,2)}
+function cp(t,l='Copied'){navigator.clipboard.writeText(t).then(()=>log('success',l),e=>log('error','Copy failed',e))}
+function req(){if(!S.connected){log('warn','Wallet not connected');return false}return true}
+const g=id=>document.getElementById(id).value.trim();
 
-  const head = document.createElement("div");
-  const tagSpan = document.createElement("span");
-  tagSpan.className = "entry-tag";
-  tagSpan.textContent = tag;
-  head.appendChild(tagSpan);
-
-  const body = document.createElement("div");
-  body.textContent =
-    typeof value === "string" ? value : JSON.stringify(value, null, 2);
-
-  wrap.appendChild(time);
-  wrap.appendChild(head);
-  wrap.appendChild(body);
-  logEl.prepend(wrap);
-}
-
-function requireWallet() {
-  if (!ui.account?.address) throw new Error("Connect a wallet first.");
-  return ui.account;
-}
-
-function parseFriendly(value, label = "Address") {
-  const raw = (value ?? "").trim();
-  if (!raw) throw new Error(`${label} is required.`);
-  try {
-    return Address.parse(raw).toString({
-      urlSafe: true,
-      bounceable: true,
-    });
-  } catch {
-    throw new Error(
-      `${label} is invalid. Use a friendly address starting with EQ or UQ.`,
-    );
-  }
-}
-
-function decimalToUnits(value, decimals) {
-  const s = String(value).trim();
-  if (!/^\d+(\.\d+)?$/.test(s)) {
-    throw new Error("Amount must be a positive number.");
-  }
-  const [whole, fraction = ""] = s.split(".");
-  if (fraction.length > decimals) {
-    throw new Error(`Amount exceeds ${decimals} decimal places.`);
-  }
-  return BigInt(whole + fraction.padEnd(decimals, "0"));
-}
-
-function commentCell(text) {
-  const t = (text ?? "").trim();
-  if (!t) return null;
-  return beginCell().storeUint(0, 32).storeStringTail(t).endCell();
-}
-
-function payloadBoc(cell) {
-  return cell ? cell.toBoc().toString("base64") : undefined;
-}
-
-function validUntil() {
-  return Math.floor(Date.now() / 1000) + 300;
-}
-
-function currentNetwork() {
-  return $("target-network").value || MAINNET_CHAIN;
-}
-
-function isTestnetMode() {
-  return currentNetwork() === TESTNET_CHAIN;
-}
-
-function walletMaxMessages() {
-  const features = ui.wallet?.device?.features ?? [];
-  const st = features.find(
-    (f) => typeof f === "object" && f !== null && f.name === "SendTransaction",
-  );
-  const n = Number(st?.maxMessages);
-  return Number.isInteger(n) && n > 0 ? Math.min(n, MAX_REQUEST_MESSAGES) : 1;
-}
-
-function walletSupportsFeature(name) {
-  const features = ui.wallet?.device?.features ?? [];
-  return features.some((f) =>
-    typeof f === "string" ? f === name : f?.name === name,
-  );
-}
-
-function featureNames() {
-  const features = ui.wallet?.device?.features ?? [];
-  if (!features.length) return "—";
-  return features
-    .map((f) => (typeof f === "string" ? f : f?.name ?? "?"))
-    .filter(Boolean)
-    .join(", ");
-}
-
-function chunk(arr, size) {
-  const out = [];
-  for (let i = 0; i < arr.length; i += size) {
-    out.push(arr.slice(i, i + size));
-  }
-  return out;
-}
-
-function askToSend(summary) {
-  return window.confirm(
-    `${summary}\n\nThe wallet will open for signing. This action may be irreversible. Continue?`,
-  );
-}
-
-function makeTonMessage(address, amountTon, comment = "") {
-  const cell = commentCell(comment);
-  return {
-    address: parseFriendly(address, "Recipient address"),
-    amount: toNano(String(amountTon)).toString(),
-    ...(cell ? { payload: payloadBoc(cell) } : {}),
-  };
-}
-
-function collectBulk() {
-  const recipient = parseFriendly(
-    $("bulk-recipient").value,
-    "Recipient address",
-  );
-  const count = Number($("bulk-count").value);
-  const amount = $("bulk-amount").value.trim();
-  const prefix = $("bulk-comment").value.trim();
-
-  if (!Number.isInteger(count) || count < 1 || count > MAX_REQUEST_MESSAGES) {
-    throw new Error(
-      `Message count must be an integer between 1 and ${MAX_REQUEST_MESSAGES}.`,
-    );
-  }
-  if (!amount) throw new Error("Enter an amount per message.");
-
-  toNano(amount);
-
-  return Array.from({ length: count }, (_, i) =>
-    makeTonMessage(
-      recipient,
-      amount,
-      prefix ? `${prefix} #${i + 1}/${count}` : "",
-    ),
-  );
-}
-
-async function sendBatched(messages, label = "TON") {
-  requireWallet();
-  const perRequest = walletMaxMessages();
-  const batches = chunk(messages, perRequest);
-  const network = currentNetwork();
-
-  const total = messages.reduce((sum, m) => sum + BigInt(m.amount), 0n);
-  const totalTon = (Number(total) / 1e9).toFixed(9);
-
-  const ok = askToSend(
-    `${label}\n` +
-      `Network: ${network === TESTNET_CHAIN ? "Testnet" : "Mainnet"}\n` +
-      `Messages: ${messages.length}\n` +
-      `Requests needed: ${batches.length}\n` +
-      `Total amount: ${totalTon} TON\n` +
-      `Wallet limit per request: ${perRequest}`,
-  );
-  if (!ok) {
-    log("cancelled", "User cancelled the request.");
-    return;
-  }
-
-  const results = [];
-  for (let i = 0; i < batches.length; i++) {
-    const tx = {
-      validUntil: validUntil(),
-      network,
-      messages: batches[i],
-    };
-
-    log(`request ${i + 1}/${batches.length}`, tx);
-    try {
-      const result = await ui.sendTransaction(tx);
-      results.push(result);
-      log(`success ${i + 1}/${batches.length}`, result, "ok");
-    } catch (e) {
-      log(`failed ${i + 1}/${batches.length}`, e.message ?? e, "bad");
-      throw e;
-    }
-  }
-  return results;
-}
-
-$("send-one").onclick = async () => {
-  try {
-    const msgs = collectBulk().slice(0, 1);
-    await sendBatched(msgs, "Single TON message");
-  } catch (e) {
-    log("send-one error", e.message ?? String(e), "bad");
-  }
+const B={
+'simple-ton':()=>({validUntil:vu(),network:chi(),messages:[{address:g('simple-to'),amount:t2n(g('simple-amount'))}]}),
+'ton-comment':()=>({validUntil:vu(),network:chi(),messages:[{address:g('comment-to'),amount:t2n(g('comment-amount')),payload:cb(document.getElementById('comment-text').value)}]}),
+'multi-message':()=>{const m=JSON.parse(document.getElementById('multi-json').value.trim());if(!Array.isArray(m))throw new Error('Must be array');return{validUntil:vu(),network:chi(),messages:m}},
+'raw-jetton':()=>{const w=g('rjetton-wallet'),to=g('rjetton-to'),a=g('rjetton-amount'),at=g('rjetton-attach'),r=g('rjetton-response')||S.account?.address;if(!r)throw new Error('Response dest required');return{validUntil:vu(),network:chi(),messages:[{address:w,amount:t2n(at),payload:bj(a,to,r,1n)}]}},
+'raw-nft':()=>{const i=g('rnft-item'),no=g('rnft-newowner'),at=g('rnft-attach'),fw=g('rnft-forward')||'1',r=S.account?.address||no;return{validUntil:vu(),network:chi(),messages:[{address:i,amount:t2n(at),payload:bn(no,r,BigInt(fw))}]}},
+'items-ton':()=>{const c=document.getElementById('iton-comment').value.trim();const it={type:'ton',address:g('iton-to'),amount:t2n(g('iton-amount'))};if(c)it.payload=cb(c);return{validUntil:vu(),network:chi(),items:[it]}},
+'items-jetton':()=>{const it={type:'jetton',master:g('ijetton-master'),destination:g('ijetton-dest'),amount:g('ijetton-amount')};const a=g('ijetton-attach');if(a)it.attachAmount=t2n(a);const f=g('ijetton-forward');if(f)it.forwardAmount=f;const q=g('ijetton-queryid');if(q)it.queryId=q;return{validUntil:vu(),network:chi(),items:[it]}},
+'items-nft':()=>{const it={type:'nft',nftAddress:g('inft-address'),newOwner:g('inft-newowner')};const a=g('inft-attach');if(a)it.attachAmount=t2n(a);const f=g('inft-forward');if(f)it.forwardAmount=f;const q=g('inft-queryid');if(q)it.queryId=q;return{validUntil:vu(),network:chi(),items:[it]}},
+'items-mixed':()=>({validUntil:vu(),network:chi(),items:[{type:'ton',address:g('mixed-ton-to'),amount:t2n('0.05')},{type:'jetton',master:g('mixed-jetton-master'),destination:g('mixed-jetton-dest'),amount:'1000000'},{type:'nft',nftAddress:g('mixed-nft-address'),newOwner:g('mixed-nft-newowner')}]}),
+'extra-currency':()=>{const id=g('ec-id'),am=g('ec-amount'),m={address:g('ec-to'),amount:t2n(g('ec-ton'))};if(id&&am)m.extraCurrency={[id]:am};return{validUntil:vu(),network:chi(),messages:[m]}},
+'sign-message':()=>{const c=document.getElementById('sm-comment').value.trim();const m={address:g('sm-to'),amount:t2n(g('sm-amount'))};if(c)m.payload=cb(c);return{validUntil:vu(),network:chi(),messages:[m]}},
+'batch-stress':()=>{const to=g('stress-to'),n=Number(g('stress-count')),a=t2n(g('stress-amount'));return{validUntil:vu(),network:chi(),messages:Array.from({length:n},()=>({address:to,amount:a}))}},
+'sign-data-text':()=>({type:'text',text:document.getElementById('sdt-text').value,network:chi()}),
+'sign-data-binary':()=>({type:'binary',bytes:g('sdb-bytes'),network:chi()}),
+'sign-data-cell':()=>({type:'cell',schema:g('sdc-schema'),cell:g('sdc-cell'),network:chi()}),
+'custom-json':()=>JSON.parse(document.getElementById('custom-payload').value.trim())
 };
 
-$("send-bulk").onclick = async () => {
-  try {
-    const msgs = collectBulk();
-    log("bulk preview", {
-      count: msgs.length,
-      recipient: msgs[0].address,
-      amountEach: msgs[0].amount,
-      network: currentNetwork(),
-    });
-    await sendBatched(msgs, "TON batch");
-  } catch (e) {
-    log("send-bulk error", e.message ?? String(e), "bad");
-  }
+async function send(id){if(!req())return;try{const r=B[id]();log('info',`sendTransaction [${id}]`,r);const res=await tcUI.sendTransaction(r);log('success',`sendTransaction [${id}] ok`,res);sr(id,true,res)}catch(e){log('error',`sendTransaction [${id}] failed`,e);sr(id,false,fmt(e))}}
+async function sd(id){if(!req())return;try{const p=B[id]();log('info',`signData [${id}]`,p);const r=await tcUI.signData(p);log('success',`signData [${id}] ok`,r);sr(id,true,r)}catch(e){log('error',`signData [${id}] failed`,e);sr(id,false,fmt(e))}}
+
+const A={
+'simple-ton':()=>send('simple-ton'),
+'ton-comment':()=>send('ton-comment'),
+'multi-message':()=>send('multi-message'),
+'multi-message-generate':()=>{const to=g('stress-to')||'',n=Number(g('stress-count')||5),a=t2n(g('stress-amount')||'0.01');document.getElementById('multi-json').value=JSON.stringify(Array.from({length:n},()=>({address:to,amount:a})),null,2);log('info',`Generated ${n}-message batch`)},
+'raw-jetton':()=>send('raw-jetton'),
+'raw-nft':()=>send('raw-nft'),
+'items-ton':()=>send('items-ton'),
+'items-jetton':()=>send('items-jetton'),
+'items-nft':()=>send('items-nft'),
+'items-mixed':()=>send('items-mixed'),
+'extra-currency':()=>send('extra-currency'),
+'batch-stress':()=>send('batch-stress'),
+'sign-message':async()=>{if(!req())return;try{const r=B['sign-message']();log('info','signMessage',r);const res=await tcUI.signMessage(r);log('success','signMessage ok',res);sr('sign-message',true,res)}catch(e){log('error','signMessage failed',e);sr('sign-message',false,fmt(e))}},
+'sign-data-text':()=>sd('sign-data-text'),
+'sign-data-binary':()=>sd('sign-data-binary'),
+'sign-data-cell':()=>sd('sign-data-cell'),
+'custom-json':async()=>{if(!req())return;const m=document.getElementById('custom-method').value;try{const p=B['custom-json']();log('info',`custom ${m}`,p);let r;if(m==='sendTransaction')r=await tcUI.sendTransaction(p);else if(m==='signMessage')r=await tcUI.signMessage(p);else r=await tcUI.signData(p);log('success',`${m} ok`,r);sr('custom-json',true,r)}catch(e){log('error',`${m} failed`,e);sr('custom-json',false,fmt(e))}}
 };
 
-$("send-jetton").onclick = async () => {
-  try {
-    const account = requireWallet();
-    const jettonWallet = parseFriendly(
-      $("jetton-wallet").value,
-      "Sender Jetton Wallet",
-    );
-    const recipient = parseFriendly(
-      $("jetton-recipient").value,
-      "Recipient address",
-    );
-    const response = parseFriendly(account.address, "Response address");
-
-    const decimals = Number($("jetton-decimals").value);
-    if (!Number.isInteger(decimals) || decimals < 0 || decimals > 30) {
-      throw new Error("Decimals must be an integer between 0 and 30.");
-    }
-
-    const jettonAmount = decimalToUnits($("jetton-amount").value, decimals);
-    const forwardTonNano = 1n;
-
-    const comment = commentCell($("jetton-comment").value);
-
-    const body = beginCell()
-      .storeUint(0x0f8a7ea5, 32)
-      .storeUint(BigInt(Date.now()), 64)
-      .storeCoins(jettonAmount)
-      .storeAddress(Address.parse(recipient))
-      .storeAddress(Address.parse(response))
-      .storeBit(0)
-      .storeCoins(forwardTonNano)
-      .storeBit(comment ? 1 : 0);
-    if (comment) body.storeRef(comment);
-
-    const tx = {
-      validUntil: validUntil(),
-      network: currentNetwork(),
-      messages: [
-        {
-          address: jettonWallet,
-          amount: toNano("0.05").toString(),
-          payload: body.endCell().toBoc().toString("base64"),
-        },
-      ],
-    };
-
-    log("jetton preview", tx);
-
-    const ok = askToSend(
-      `Send ${$("jetton-amount").value} Jetton\n` +
-        `Network: ${isTestnetMode() ? "Testnet" : "Mainnet"}\n` +
-        `To: ${recipient}\n` +
-        `Attached TON: 0.05 TON`,
-    );
-    if (!ok) return;
-
-    log("jetton success", await ui.sendTransaction(tx), "ok");
-  } catch (e) {
-    log("jetton error", e.message ?? String(e), "bad");
-  }
-};
-
-$("send-nft").onclick = async () => {
-  try {
-    const account = requireWallet();
-    const nftItem = parseFriendly($("nft-item").value, "NFT item");
-    const newOwner = parseFriendly($("nft-owner").value, "New owner");
-    const response = parseFriendly(
-      $("nft-response").value.trim() || account.address,
-      "Response address",
-    );
-
-    const forward = toNano($("nft-forward").value || "0.000000001");
-    const comment = commentCell($("nft-comment").value);
-
-    const body = beginCell()
-      .storeUint(0x5fcc3d14, 32)
-      .storeUint(BigInt(Date.now()), 64)
-      .storeAddress(Address.parse(newOwner))
-      .storeAddress(Address.parse(response))
-      .storeBit(0)
-      .storeCoins(forward)
-      .storeBit(comment ? 1 : 0);
-    if (comment) body.storeRef(comment);
-
-    const tx = {
-      validUntil: validUntil(),
-      network: currentNetwork(),
-      messages: [
-        {
-          address: nftItem,
-          amount: toNano("0.08").toString(),
-          payload: body.endCell().toBoc().toString("base64"),
-        },
-      ],
-    };
-
-    log("nft preview", tx);
-
-    const ok = askToSend(
-      `Transfer NFT\n` +
-        `Network: ${isTestnetMode() ? "Testnet" : "Mainnet"}\n` +
-        `To: ${newOwner}\n` +
-        `Attached TON: 0.08 TON`,
-    );
-    if (!ok) return;
-
-    log("nft success", await ui.sendTransaction(tx), "ok");
-  } catch (e) {
-    log("nft error", e.message ?? String(e), "bad");
-  }
-};
-
-$("sign-type").onchange = () => {
-  const isCell = $("sign-type").value === "cell";
-  $("schema-wrap").classList.toggle("hidden", !isCell);
-};
-
-$("sign-data").onclick = async () => {
-  try {
-    const account = requireWallet();
-    const type = $("sign-type").value;
-    const raw = $("sign-payload").value;
-
-    if (!raw.trim()) throw new Error("Enter a payload first.");
-
-    const fromValue = $("sign-from").value.trim();
-    const from = fromValue
-      ? parseFriendly(fromValue, "from address")
-      : account.address;
-
-    const networkOverride = $("sign-network").value;
-    const network = networkOverride || currentNetwork();
-
-    const basePayload = { from, network };
-
-    let payload;
-    if (type === "text") {
-      payload = { ...basePayload, type: "text", text: raw };
-    } else if (type === "binary") {
-      payload = { ...basePayload, type: "binary", bytes: raw.trim() };
-    } else {
-      const schema = $("sign-schema").value.trim();
-      if (!schema) throw new Error("TL-B schema is required for cell type.");
-      payload = { ...basePayload, type: "cell", schema, cell: raw.trim() };
-    }
-
-    log("signData request", payload);
-
-    if (typeof ui.connector?.signData !== "function") {
-      throw new Error("This TON Connect UI build doesn't expose signData.");
-    }
-
-    const result = await ui.connector.signData(payload);
-    log("signData success", result, "ok");
-  } catch (e) {
-    log("signData error", e.message ?? String(e), "bad");
-  }
-};
-
-$("sign-message").onclick = async () => {
-  try {
-    requireWallet();
-
-    if (!walletSupportsFeature("SignMessage")) {
-      throw new Error(
-        "The connected wallet does not declare the SignMessage feature.",
-      );
-    }
-
-    if (typeof ui.connector?.signMessage !== "function") {
-      throw new Error(
-        "This TON Connect UI build doesn't expose signMessage on the connector.",
-      );
-    }
-
-    const message = makeTonMessage(
-      $("bulk-recipient").value,
-      $("bulk-amount").value || "0.000001",
-      $("bulk-comment").value,
-    );
-
-    const req = {
-      validUntil: validUntil(),
-      network: currentNetwork(),
-      messages: [message],
-    };
-
-    log("signMessage request", req);
-    log("signMessage success", await ui.connector.signMessage(req), "ok");
-  } catch (e) {
-    log("signMessage error", e.message ?? String(e), "bad");
-  }
-};
-
-function updateNetworkWarning() {
-  const warn = $("network-warning");
-  if (isTestnetMode()) {
-    warn.textContent =
-      "Testnet mode is active. Only use testnet assets on testnet. Mainnet transfers are irreversible.";
-  } else {
-    warn.textContent =
-      "Mainnet mode is active. Transfers are irreversible. Confirm every address and amount before signing.";
-  }
-}
-
-$("target-network").onchange = () => {
-  updateNetworkWarning();
-  log(
-    "network changed",
-    `Target network is now ${isTestnetMode() ? "Testnet (-3)" : "Mainnet (-239)"}.`,
-  );
-};
-
-ui.onStatusChange((wallet) => {
-  if (wallet) {
-    $("dot").classList.add("on");
-    $("wallet-status").textContent = "Connected";
-    $("disconnect").classList.remove("hidden");
-
-    const chain = wallet.account.chain;
-    const chainLabel =
-      chain === TESTNET_CHAIN ? "Testnet" : chain === MAINNET_CHAIN ? "Mainnet" : "Other";
-
-    $("wallet-details").innerHTML = `
-      <div><strong>Address</strong> <span class="mono">${wallet.account.address}</span></div>
-      <div><strong>Chain</strong> <span class="mono">${chain} (${chainLabel})</span></div>
-      <div><strong>Wallet</strong> <span>${wallet.device?.appName ?? "—"}</span></div>
-      <div><strong>Features</strong> <span>${featureNames()}</span></div>
-      <div><strong>Max messages / request</strong> <span>${walletMaxMessages()}</span></div>
-    `;
-
-    log("connected", {
-      address: wallet.account.address,
-      chain: wallet.account.chain,
-      appName: wallet.device?.appName,
-      maxMessages: walletMaxMessages(),
-    });
-  } else {
-    $("dot").classList.remove("on");
-    $("wallet-status").textContent = "Not connected";
-    $("wallet-details").textContent = "";
-    $("disconnect").classList.add("hidden");
-  }
-});
-
-$("disconnect").onclick = async () => {
-  try {
-    await ui.disconnect();
-    log("disconnected", "Wallet disconnected.");
-  } catch (e) {
-    log("disconnect error", e.message ?? String(e), "bad");
-  }
-};
-
-$("clear-log").onclick = () => logEl.replaceChildren();
-
-updateNetworkWarning();
-log(
-  "ready",
-  "Toolkit loaded with TonEase wallet and the production manifest. Select a network, connect a wallet, and start testing.",
-  "ok",
-);
+document.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const a=b.getAttribute('data-action');if(A[a])A[a]()}));
+document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',()=>{const id=b.getAttribute('data-copy');try{const r=B[id]();cp(JSON.stringify(r,null,2),`JSON for ${id} copied`)}catch(e){log('error','Build failed',e)}}));
+document.querySelectorAll('.ni').forEach(i=>i.addEventListener('click',()=>{const t=i.getAttribute('data-target');const el=document.getElementById(t);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));i.classList.add('active')}));
+document.getElementById('net').addEventListener('change',e=>{S.network=e.target.value;log('info',`Network: ${S.network}`,{chainId:chi()})});
+document.getElementById('log-clear').addEventListener('click',()=>{LE=[];rlog()});
+document.getElementById('log-clear-bar').addEventListener('click',()=>{LE=[];rlog()});
+document.getElementById('log-copy').addEventListener('click',()=>{cp(LE.map(e=>`[${e.ts}] ${e.level.toUpperCase()} ${e.message}${e.data?'\n'+fmt(e.data):''}`).join('\n\n'),'Log copied')});
+document.getElementById('multi-json').value=JSON.stringify([{address:'',amount:'10000000',payload:null},{address:'',amount:'10000000',payload:null}],null,2);
+document.getElementById('custom-payload').value=JSON.stringify({validUntil:Math.floor(Date.now()/1000)+360,network:'-3',messages:[{address:'',amount:'50000000'}]},null,2);
+initTC();
+window.__tc={S,ui:()=>tcUI,log};
 </script>
 </body>
 </html>
