@@ -380,7 +380,7 @@ section{margin-bottom:6px;background:var(--bg2);border:1px solid var(--bd);borde
 <script type="module">
 import { Address, beginCell, toNano } from 'https://cdn.jsdelivr.net/npm/@ton/core@0.56.0/+esm';
 
-const MANIFEST='https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json';
+const MANIFEST='https://raw.githubusercontent.com/CoreEase/assets/refs/heads/main/assets/tonconnect-manifest.json';
 const NET={testnet:'-3',mainnet:'-239'};
 const S={network:'testnet',connected:false,account:null,wallet:null,device:null};
 const LL=document.getElementById('log-list');
@@ -389,6 +389,18 @@ const BD=document.getElementById('backdrop');
 const LC=document.getElementById('log-count');
 let LE=[];
 const LVL={info:'i',success:'+',error:'x',warn:'!'};
+  
+const INCLUDE_WALLETS = [
+  {
+    appName: "tonease",
+    name: "TonEase",
+    imageUrl: "https://raw.githubusercontent.com/CoreEase/assets/refs/heads/main/assets/logo.webp",
+    aboutUrl: "https://gram-wallet.vercel.app",
+    universalLink: "https://t.me/TonEaseBot?attach=wallet",
+    bridgeUrl: "https://connect.ton.org/bridge",
+    platforms: ["chrome", "android", "ios", "macos", "windows", "linux"],
+  },
+];
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmt(d){if(d instanceof Error)return d.name+': '+d.message;if(typeof d==='string')return d;try{return JSON.stringify(d,null,2)}catch{return String(d)}}
@@ -407,14 +419,22 @@ document.getElementById('log-close').addEventListener('click',closeLog);
 let tcUI=null;
 function initTC(){
 if(typeof TON_CONNECT_UI==='undefined'){log('error','TON Connect UI failed to load');return}
-tcUI=new TON_CONNECT_UI.TonConnectUI({manifestUrl:MANIFEST,buttonRootId:'ton-connect-button',uiPreferences:{theme:'DARK'}});
+tcUI=new TON_CONNECT_UI.TonConnectUI({
+  manifestUrl: MANIFEST,
+  buttonRootId: 'ton-connect-button',
+  uiPreferences: { theme: 'DARK' },
+  walletsListConfiguration: {
+    includeWallets: INCLUDE_WALLETS,
+  },
+});
+log('info','TON Connect initialized with custom wallets', { customWallets: INCLUDE_WALLETS.map(w => w.appName) });
 tcUI.onStatusChange(w=>{
 S.wallet=w;
 if(w){S.connected=true;S.account=w.account;S.device=w.device;
 log('success','Wallet connected',{address:w.account.address,chain:w.account.chain});
 upd('on','Connected');rwi()}
 else{S.connected=false;S.account=null;S.device=null;log('info','Wallet disconnected');upd('','Off');rwi()}});
-log('info','TON Connect initialized')}
+}
 function upd(c,t){document.getElementById('ws').className='pill '+c;document.getElementById('wst').textContent=t}
 function rwi(){
 const c=document.getElementById('wi');
