@@ -417,7 +417,26 @@ const INCLUDE_WALLETS = [
     universalLink: "https://t.me/TonEaseBot?attach=wallet",
     bridgeUrl: "https://connect.ton.org/bridge",
     platforms: ["chrome", "android", "ios", "macos", "windows", "linux"],
-  },
+    features: [
+    {
+      name: "SendTransaction",
+      maxMessages: 4,
+      extraCurrencySupported: true,
+      itemTypes: ["ton", "jetton", "nft"],
+    },
+    {
+      name: "SignData",
+      types: ["text", "binary", "cell"],
+    },
+    {
+      name: "SignMessage",
+      maxMessages: 4,
+      extraCurrencySupported: true,
+      itemTypes: ["ton", "jetton", "nft"],
+    },
+    { name: "EmbeddedRequest" },
+  ],
+ },
 ];
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
