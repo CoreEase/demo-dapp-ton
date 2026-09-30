@@ -139,6 +139,7 @@ section{margin-bottom:6px;background:var(--bg2);border:1px solid var(--bd);borde
 
 <nav class="nav">
 <a class="ni active" data-target="connection">Connect</a>
+<a class="ni" data-target="embedded-tx">Embed-Tx</a>
 <a class="ni" data-target="simple-ton">TON</a>
 <a class="ni" data-target="ton-comment">Comment</a>
 <a class="ni" data-target="multi-message">Multi</a>
@@ -164,6 +165,23 @@ section{margin-bottom:6px;background:var(--bg2);border:1px solid var(--bd);borde
 <div class="sh"><h2>Connection <span class="tag b">connect</span></h2><p>Wallet state and features.</p></div>
 <div class="sb"><div id="wi"><div class="es">Not connected. Tap the button above.</div></div></div>
 </section>
+
+<section id="embedded-tx">
+<div class="sh"><h2>Embedded Request (Connect + Tx) <span class="tag k">enableEmbeddedRequest</span></h2>
+<p>Connect + sendTransaction in one tap. Works when <b>not connected</b>. Wallet must advertise <code>EmbeddedRequest</code> feature. Disconnect first to test the full flow.</p></div>
+<div class="sb">
+<div class="fg">
+<div class="f full"><label>Recipient</label><input id="embed-to" placeholder="EQ..." autocomplete="off" spellcheck="false"></div>
+<div class="f"><label>Amount (TON)</label><input id="embed-amount" value="0.05" inputmode="decimal"></div>
+<div class="f full"><label>Comment (opt)</label><input id="embed-comment" value="Embedded request test"></div>
+</div>
+<div class="ac">
+<button class="btn pri" data-action="embedded-tx">Connect + Send</button>
+<button class="btn gh" data-action="embedded-disconnect">Disconnect first</button>
+<button class="btn gh" data-copy="embedded-tx">Copy JSON</button>
+</div>
+<div class="res" id="result-embedded-tx" style="display:none"></div>
+</div></section>
 
 <section id="simple-ton">
 <div class="sh"><h2>Simple TON <span class="tag g">sendTransaction</span></h2><p>Send TON without comment.</p></div>
@@ -455,6 +473,7 @@ function req(){if(!S.connected){log('warn','Wallet not connected');return false}
 const g=id=>document.getElementById(id).value.trim();
 
 const B={
+'embedded-tx':()=>{const c=document.getElementById('embed-comment').value.trim();const m={address:g('embed-to'),amount:t2n(g('embed-amount'))};if(c)m.payload=cb(c);return{validUntil:vu(),network:chi(),messages:[m]}},
 'simple-ton':()=>({validUntil:vu(),network:chi(),messages:[{address:g('simple-to'),amount:t2n(g('simple-amount'))}]}),
 'ton-comment':()=>({validUntil:vu(),network:chi(),messages:[{address:g('comment-to'),amount:t2n(g('comment-amount')),payload:cb(document.getElementById('comment-text').value)}]}),
 'multi-message':()=>{const m=JSON.parse(document.getElementById('multi-json').value.trim());if(!Array.isArray(m))throw new Error('Must be array');return{validUntil:vu(),network:chi(),messages:m}},
@@ -477,6 +496,32 @@ async function send(id){if(!req())return;try{const r=B[id]();log('info',`sendTra
 async function sd(id){if(!req())return;try{const p=B[id]();log('info',`signData [${id}]`,p);const r=await tcUI.signData(p);log('success',`signData [${id}] ok`,r);sr(id,true,r)}catch(e){log('error',`signData [${id}] failed`,e);sr(id,false,fmt(e))}}
 
 const A={
+'embedded-tx':async()=>{
+  try{
+    const r=B['embedded-tx']();
+    log('info','sendTransaction [embedded-tx] enableEmbeddedRequest=true',r);
+    const res=await tcUI.sendTransaction(r,{enableEmbeddedRequest:true});
+    if(res && typeof res==='object' && 'hasResponse' in res){
+      if(res.hasResponse){
+        log('success','Embedded request OK — got response with connect',res);
+        sr('embedded-tx',true,res);
+      }else{
+        log('warn','Connected but no embedded response',res);
+        sr('embedded-tx',false,res);
+      }
+    }else{
+      log('success','sendTransaction [embedded-tx] ok (already connected path)',res);
+      sr('embedded-tx',true,res);
+    }
+  }catch(e){
+    log('error','sendTransaction [embedded-tx] failed',e);
+    sr('embedded-tx',false,fmt(e));
+  }
+},
+'embedded-disconnect':async()=>{
+  if(!S.connected){log('info','Already disconnected');return}
+  try{await tcUI.disconnect();log('success','Disconnected — ready for embedded test')}catch(e){log('error','Disconnect failed',e)}
+},
 'simple-ton':()=>send('simple-ton'),
 'ton-comment':()=>send('ton-comment'),
 'multi-message':()=>send('multi-message'),
